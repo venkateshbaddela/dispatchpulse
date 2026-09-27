@@ -17,7 +17,7 @@ class Organization(models.Model):
 class User(AbstractUser):
     class Role(models.TextChoices):
         ADMIN = "ADMIN", "Admin"
-        RESPONDER = "RESPONDER", "responder"
+        RESPONDER = "RESPONDER", "Responder"
         VIEWER = "VIEWER", "Viewer"
 
     organization = models.ForeignKey(
