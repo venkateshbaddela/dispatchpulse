@@ -2,16 +2,16 @@
 
 ## Current Status
 - **Active Milestone:** Milestone 1 — Project Skeleton & Core Architecture
-- **Active Focus:** AI Context Grounding & Implementation Planning
+- **Active Focus:** F02 — DRF & CORS Setup
 - **Completed Steps:**
-  - Operating System: Linux verified
-  - Runtimes verified: Python 3.12.3, Git 2.43.0
-  - Repository structure initialized: `dispatchpulse/` (`/backend` and `/frontend`)
-  - Virtual environment and core dependencies installed: `django`, `djangorestframework`, `django-cors-headers`, `requests`, `python-dotenv`
-  - Django project (`config`) and `accounts` app scaffolded
+  - Python virtual environment `.venv` active with required packages installed
+  - Django project `config` and `accounts` app scaffolded
+  - Custom `Organization` and `User` models defined in `accounts/models.py`
+  - `AUTH_USER_MODEL = 'accounts.User'` registered in `settings.py`
+  - Initial database migrations generated and applied successfully
   - Strict Rule Locked: DO NOT OVER-ENGINEER (minimal dependencies, step-by-step chat workflow)
   - Workflow Decision: Discarded dual-tool friction; unified pair-programming directly in Chat
-- **Immediate Next Step:** Finalize the AI context plan in `CURRENT_FEATURE.md`, then execute `accounts/models.py` and initial migrations.
+- **Immediate Next Step:** Begin F02 by configuring Django REST Framework settings and CORS middleware.
 
 ## Environment Context
 - Root Directory: `dispatchpulse/`
