@@ -39,11 +39,13 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     #Tird-party
     'rest_framework',
+    'corsheaders',
     #Local apps
     'accounts',
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -51,6 +53,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -130,4 +133,25 @@ MAILERS = {
     },
 }
 
+#Aut User Model
 AUTH_USER_MODEL = 'accounts.User'
+
+#Django REST Framework Configuration
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.auithentication.BasicAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+}
+
+#CORS Allowed Origins (Vite React default ports)
+CORS_ALLOWED_ORIGINS = [
+    'http://localost:5173',
+    'http://127.0.0.1:5173',
+]
+
+#Allow credentials (cookies/auth headers) across origins
+CORS_ALLOW_CREDENTIALS = True
