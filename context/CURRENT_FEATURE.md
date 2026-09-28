@@ -1,22 +1,22 @@
-# Feature Tracking: F05 — Demo Seed Data Command
+# Feature Tracking: F06 — Automated HTTP Health Pinger Engine
 
 ## Feature Overview
-- **Branch:** `feat/f05-seed-data`
-- **Milestone:** Milestone 1 — Project Skeleton & Database Schema
+- **Branch:** `feat/f06-health-pinger`
+- **Milestone:** Milestone 2 — Background Automation, APIs & Triage Engine
 - **Status:** Complete & Verified
 
 ## Completed Changes
-1. **Package Scaffolding:**
-   - Created `monitoring/management/commands/` directory structure with required `__init__.py` module files.
-2. **Command Implementation (`backend/monitoring/management/commands/seed_demo_data.py`):**
-   - Subclassed Django's `BaseCommand` with optional `--flush` argument.
-   - Seeded `Organization` (`Acme Corp`), admin user, and on-call responders.
-   - Seeded 4 monitored services with attached `AlertRule` tripwires.
-   - Seeded 120 synthetic historical `HealthCheckLog` time-series entries simulating latency and failure states.
-   - Seeded realistic `Incident` records (`P1`, `P2`, `P3`) with audit timeline logs (`IncidentLog`) and mock AI diagnostic payloads.
+1. **Concurrent Probe Engine (`backend/monitoring/engine.py`):**
+   - Implemented `probe_single_service()` with dynamic failure classification (`classify_failure`) and millisecond response tracking.
+   - Built `evaluate_alert_rules()` to detect consecutive failure streaks and automatically trip `P1`/`P2` incidents with audit logs (`IncidentLog`).
+   - Built `probe_all_services_concurrently()` using Python's `ThreadPoolExecutor` to execute non-blocking, simultaneous HTTP probes across all registered services.
+2. **Management Command Runner (`backend/monitoring/management/commands/run_health_checks.py`):**
+   - Implemented `--once` mode for synchronous single-pass sweeps with ANSI color-coded telemetry output.
+   - Implemented `--daemon` mode with configurable polling intervals (`--interval`) and graceful `KeyboardInterrupt` termination.
 3. **Execution & Verification:**
-   - Ran `python manage.py seed_demo_data` successfully against PostgreSQL.
-   - Confirmed idempotency and clean relational foreign key creation.
+   - Ran `python manage.py run_health_checks` against all 5 database-seeded services.
+   - Verified concurrent fan-out (1.30s total sweep time) and accurate failure detection on 500 and 504 endpoints.
 
 ## Immediate Next Step
-- Merge `feat/f05-seed-data` into `main`, complete Milestone 1, and proceed to **Milestone 2 / F06: Automated HTTP Health Pinger engine & alert threshold trigger**.
+- Merge `feat/f06-health-pinger` into `main`.
+- Proceed to **F07: DRF API ViewSets, Serializers & Incident Lifecycle Actions**.

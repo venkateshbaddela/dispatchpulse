@@ -14,6 +14,7 @@
 - [x] **F03: Monitoring & Heartbeat Schema** (`monitoring.Service`, `monitoring.HealthCheckLog`, migrations applied, admin registered, shell tested)
 - [x] **F04: Incident & Timeline Schema** (`incidents.Incident`, `incidents.IncidentLog`, `incidents.AlertRule`)
 - [x] **F05: Demo Seed Data Command** (`python manage.py seed_demo_data`)
+- [x] **F06: Automated HTTP Health Pinger engine & alert threshold trigger**
 
 ## Current Working Focus
-- F03 completed and verified. Ready to commit to Git and proceed to F04.
+- F06 completed and verified. Commit to Git and ready to proceed to F07.
