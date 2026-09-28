@@ -19,3 +19,7 @@
 ## ADR-005: Pair-Programming & Chat Handoff Protocol
 - **Decision:** Strict tutor-paced execution. After every feature merge, halt for a dedicated Q&A session before creating branches or executing commands.
 - **Reasoning:** Ensures conceptual understanding and prevents drift across new chat sessions.
+
+## ADR-006: Demo Seed Data & Telemetry Ingestion Strategy
+- **Decision:** The `seed_demo_data` command uses idempotent `get_or_create` / `update_or_create` patterns with an opt-in `--flush` flag for safe resets. Historical time-series telemetry (`HealthCheckLog`) is ingested using `bulk_create` rather than single-row inserts.
+- **Reasoning:** Prevents database state corruption across repeated runs while avoiding thousands of separate network trips to the PostgreSQL database for telemetry logs.
