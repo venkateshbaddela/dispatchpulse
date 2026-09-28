@@ -12,7 +12,7 @@
 - [x] **F01: Tenant & Custom Auth Schema** (`accounts.Organization`, custom `accounts.User` with email auth, migrated and admin configured)
 - [x] **F02: DRF & CORS Configuration** (`rest_framework`, `corsheaders` middleware registered and verified)
 - [x] **F03: Monitoring & Heartbeat Schema** (`monitoring.Service`, `monitoring.HealthCheckLog`, migrations applied, admin registered, shell tested)
-- [ ] **F04: Incident & Timeline Schema** (`incidents.Incident`, `incidents.TimelineEvent`, `incidents.AlertRule`)
+- [x] **F04: Incident & Timeline Schema** (`incidents.Incident`, `incidents.IncidentLog`, `incidents.AlertRule`)
 - [ ] **F05: Demo Seed Data Command** (`python manage.py seed_demo_data`)
 
 ## Current Working Focus
