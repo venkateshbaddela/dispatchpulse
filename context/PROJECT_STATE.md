@@ -1,20 +1,14 @@
-# DispatchPulse — Project State Ledger
+# Project State — DispatchPulse
 
-## Architecture & Environment
-- **Root Directory:** `/workspaces/dispatchpulse/`
-- **Backend Directory:** `/workspaces/dispatchpulse/backend/` (Virtual environment: `.venv`)
-- **Frontend Directory:** `/workspaces/dispatchpulse/frontend/` (Pending Vite setup)
-- **Active Branch:** `feat/f03-monitor-models`
-- **Stack:** Python 3.14 / 3.12, Django 6.x / 5.x, DRF, django-cors-headers, PostgreSQL ready (psycopg 3.3.6), Vite + React.
+## Completed Features
+- [x] F00: Scaffolding, repository setup, .gitignore, virtualenv.
+- [x] F01: `accounts` app (custom User model with email login, UUID Organization model).
+- [x] F02: DRF & CORS configuration.
+- [x] F03: `monitoring` app (`Service`, `HealthCheckLog`, custom admin).
+- [x] F04: `incidents` app (`Incident`, `IncidentLog`, `AlertRule`, admin wiring).
+- [x] F05: Seed demo data script (`seed_demo_data`).
+- [x] F06: Automated HTTP Health Pinger engine (`engine.py`) & alert threshold trigger.
+- [x] F07: DRF API ViewSets, Serializers & incident lifecycle actions.
 
-## Milestone 1: Project Skeleton & Core Architecture
-- [x] **F00: Project Scaffolding & Virtualenv** (Backend and base structure initialized)
-- [x] **F01: Tenant & Custom Auth Schema** (`accounts.Organization`, custom `accounts.User` with email auth, migrated and admin configured)
-- [x] **F02: DRF & CORS Configuration** (`rest_framework`, `corsheaders` middleware registered and verified)
-- [x] **F03: Monitoring & Heartbeat Schema** (`monitoring.Service`, `monitoring.HealthCheckLog`, migrations applied, admin registered, shell tested)
-- [x] **F04: Incident & Timeline Schema** (`incidents.Incident`, `incidents.IncidentLog`, `incidents.AlertRule`)
-- [x] **F05: Demo Seed Data Command** (`python manage.py seed_demo_data`)
-- [x] **F06: Automated HTTP Health Pinger engine & alert threshold trigger**
-
-## Current Working Focus
-- F06 completed and verified. Commit to Git and ready to proceed to F07.
+## In-Flight / Next Milestone
+- [ ] F08: React Vite Setup & Tailwind modern SRE workspace theme.
