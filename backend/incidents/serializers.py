@@ -1,8 +1,10 @@
 from rest_framework import serializers
 from .models import Incident, IncidentLog, AlertRule
+from accounts.serializers import UserSerializer
 
 class IncidentLogSerializer(serializers.ModelSerializer):
     actor_email = serializers.EmailField(source='actor.email', read_only=True)
+    actor = UserSerializer(read_only=True)
     class Meta:
         model = IncidentLog
         fields = [
@@ -33,7 +35,8 @@ class IncidentSerializer(serializers.ModelSerializer):
     service_name = serializers.CharField(source='service.name', read_only=True)
     assigned_to_email = serializers.EmailField(source='assigned_to.email', read_only=True)
     logs = IncidentLogSerializer(many=True, read_only=True)
-
+    assigned_to = UserSerializer(read_only=True)
+    
     class Meta:
         model = Incident
         fields = [

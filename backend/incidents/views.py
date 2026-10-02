@@ -1,5 +1,5 @@
 from django.utils import timezone
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -18,7 +18,7 @@ class IncidentViewSet(viewsets.ModelViewSet):
             return Incident.objects.none()
 
         queryset = (
-            Incident.objects.filter(organization=user.organzation)
+            Incident.objects.filter(organization=user.organization)
             .select_related('service', 'assigned_to')
             .prefetch_related('logs', 'logs__actor')
         )
@@ -27,7 +27,7 @@ class IncidentViewSet(viewsets.ModelViewSet):
         if status_param:
             queryset = queryset.filter(status=status_param.upper())
 
-        severity_param = self.request.query_param.get('severity')
+        severity_param = self.request.query_params.get('severity')
         if severity_param:
             queryset = queryset.filter(severity=severity_param.upper())
         
@@ -69,7 +69,7 @@ class IncidentViewSet(viewsets.ModelViewSet):
         if incident.status == Incident.Status.RESOLVED:
             return Response(
                 {'detail': "Incident is already resolved."},
-                status=status.TTP_400_BAD_REQUEST,
+                status=status.HTTP_400_BAD_REQUEST,
             )
         incident.status = Incident.Status.RESOLVED
         incident.resolved_at = timezone.now()
@@ -86,12 +86,12 @@ class IncidentViewSet(viewsets.ModelViewSet):
             note=note_text,
         )
 
-        return Response(IncidentSerializer(incident).data, status=status.HTTP_20_OK)
+        return Response(IncidentSerializer(incident).data, status=status.HTTP_200_OK)
 
 
 class AlertRuleViewset(viewsets.ModelViewSet):
     serializer_class = AlertRuleSerializer
-    permission_classes = ['IsAutenticated']
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user

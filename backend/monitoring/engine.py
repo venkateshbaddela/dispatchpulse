@@ -55,7 +55,7 @@ def probe_single_service(service:Service) -> HealthCheckLog:
 def evaluate_alert_rules(service: Service, rule:AlertRule | None) -> Incident | None:
     """Evaluates recent telemetry logs against alert rules to trip or recover incidents."""
 
-    if not rule or rule.is_active:
+    if not rule or not rule.is_active:
         return None
 
     # Fetch te most recent N logs for this service
@@ -83,26 +83,26 @@ def evaluate_alert_rules(service: Service, rule:AlertRule | None) -> Incident | 
             service.save(update_fields=["status"])
 
     # If no active incident exists, trip a new P1 Incident
-    if not active_incident:
-        last_log = recent_logs[0]
-        new_incident  = Incident.objects.create(
-            organization=service.organization,
-            service=service,
-            title=f"Outage detected: {service.name} failing health checks",
-            error_type=Incident.ErrorType.SERVER_CRASH,
-            severity=Incident.Severity.P1,
-            status=Incident.Status.TRIGGERED,
-            raw_logs=last_log.error_message or "Consecutive health checks timed out or returned 5xx.",
-        )
-        # Create the initial audit log
-        Incident.objects.create(
-            incident=new_incident,
-            actor=None,
-            event_type=IncidentLog.EventType.TRIGGERED,
-            note=f"Tripped automatically: {rule.consecutive_failures} consecutive failures recorded.", 
-        )
+        if not active_incident:
+            last_log = recent_logs[0]
+            new_incident  = Incident.objects.create(
+                organization=service.organization,
+                service=service,
+                title=f"Outage detected: {service.name} failing health checks",
+                error_type=Incident.ErrorType.SERVER_CRASH,
+                severity=Incident.Severity.P1,
+                status=Incident.Status.TRIGGERED,
+                raw_logs=last_log.error_message or "Consecutive health checks timed out or returned 5xx.",
+            )
+            # Create the initial audit log
+            IncidentLog.objects.create(
+                incident=new_incident,
+                actor=None,
+                event_type=IncidentLog.EventType.TRIGGERED,
+                note=f"Tripped automatically: {rule.consecutive_failures} consecutive failures recorded.", 
+            )
 
-        return new_incident
+            return new_incident
     else:
         # If the latest check was successful, restore service status if needed
         latest_log = recent_logs[0]

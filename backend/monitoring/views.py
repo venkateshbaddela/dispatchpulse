@@ -58,9 +58,9 @@ class DashboardKPIView(APIView):
         total_services = services.count()
 
         # Compute overall system status
-        if services.filter(status=Service.Status.MAJOR_OUTAGE).exists():
+        if services.filter(status=Service.ServiceStatus.MAJOR_OUTAGE).exists():
             system_status = 'MAJOR_OUTAGE'
-        elif services.filter(status=Service.Status.DEGRADED).exists():
+        elif services.filter(status=Service.ServiceStatus.DEGRADED).exists():
             system_status = 'DEGRADED'
         else:
             system_status = 'OPERATIONAL'
@@ -103,14 +103,14 @@ class PublicStatusView(APIView):
 
     def get(self, request, slug=None):
         org = get_object_or_404(Organization, slug=slug, is_active=True)
-        services = Service.objects.filter(Organization=org)
+        services = Service.objects.filter(organization=org)
 
-        if services.filter(status=Service.Status.MAJOR_OUTAGE).exists():
+        if services.filter(status=Service.ServiceStatus.MAJOR_OUTAGE).exists():
             overall_status = 'MAJOR_OUTAGE'
-        elif services.filetr(status=Service.Status.DEGRADED).exists():
+        elif services.filter(status=Service.ServiceStatus.DEGRADED).exists():
             overall_status = 'DEGRADED'
         else:
-            overall_status = 'OPEATIONAL'
+            overall_status = 'OPERATIONAL'
 
         return Response(
             {
@@ -128,3 +128,4 @@ class PublicStatusView(APIView):
             },
             status=status.HTTP_200_OK
         )
+

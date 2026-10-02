@@ -17,7 +17,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["id", "email", "role", "is_on_call", "organization"]
+        fields = ["id", "email", "role", "is_on_call", "organization", "first_name", "last_name"]
         read_only_fields = ["id", "organization"]
 
 class RegisterSerializer(serializers.Serializer):
@@ -36,7 +36,7 @@ class RegisterSerializer(serializers.Serializer):
         password = validated_data['password']
 
         # Generate unique slug and API key for organization
-        base_slug = slugify(self.org_name) or "org"
+        base_slug = slugify(org_name) or "org"
         slug = f"{base_slug}-{uuid.uuid4().hex[:6]}"
         api_key = f"dp_live_{uuid.uuid4().hex}"
 
@@ -51,7 +51,7 @@ class RegisterSerializer(serializers.Serializer):
             email=email,
             password=password,
             organization=organization,
-            role=User.Roles.ADMIN,
+            role=User.Role.ADMIN,
         )
         token, _ = Token.objects.get_or_create(user=user)
         return user, token
@@ -74,7 +74,7 @@ class LoginSerializer(serializers.Serializer):
             password=password,
         )
         if not user:
-            raise serializers.ValidationError("Inva;id email or password.")
+            raise serializers.ValidationError("Invalid email or password.")
         if not user.is_active:
             raise serializers.ValidationError("User account is disabled.")
 

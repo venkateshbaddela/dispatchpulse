@@ -25,7 +25,7 @@ SECRET_KEY = "django-insecure-3(x=0#7tcg$%)numbl&m9$lw9d)0vdpmcmzo1o+%*@3m!2fc&k
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -142,6 +142,7 @@ AUTH_USER_MODEL = 'accounts.User'
 #Django REST Framework Configuration
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.BasicAuthentication',
     ],
@@ -151,9 +152,14 @@ REST_FRAMEWORK = {
 }
 
 #CORS Allowed Origins (Vite React default ports)
+CORS_ALLOWED_ORIGIN_REGEXES = [                                                                                                                                               
+        r"^https:\/\/.*\.app\.github\.dev$",                                                                                                                                      
+    ]           
+
 CORS_ALLOWED_ORIGINS = [
-    'http://localost:5173',
+    'https://upgraded-fishstick-qxwxxjp6g5jf44q-5173.app.github.dev',
     'http://127.0.0.1:5173',
+    'http://localhost:5173'
 ]
 
 #Allow credentials (cookies/auth headers) across origins
