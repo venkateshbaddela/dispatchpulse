@@ -25,7 +25,8 @@ class IncidentViewSet(viewsets.ModelViewSet):
 
         status_param = self.request.query_params.get('status')
         if status_param:
-            queryset = queryset.filter(status=status_param.upper())
+            statuses = [s.strip().upper() for s in status_param.split(',') if s.strip()] 
+            queryset = queryset.filter(status__in=statuses)
 
         severity_param = self.request.query_params.get('severity')
         if severity_param:
@@ -98,3 +99,5 @@ class AlertRuleViewset(viewsets.ModelViewSet):
         if not user.organization:
             return AlertRule.objects.none()
         return AlertRule.objects.filter(service__organization=user.organization)
+
+    

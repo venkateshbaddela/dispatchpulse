@@ -1,9 +1,10 @@
-import { ShieldAlert, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/useAuth";
 import { Input } from "../../components/ui/Input";
 import { Button } from "../../components/ui/Button";
+import { Logo } from "../../components/ui/Logo";
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
@@ -38,13 +39,16 @@ export const LoginPage: React.FC = () => {
       <div className="w-full max-w-md bg-white dark:bg-obsidian-card border border-slate-200 dark:border-obsedian-border rounded-2xl p-8 shadow-xl">
         {/* Brand Header */}
         <div className="flex flex-col items-center text-center mb-8">
-          <div className="h-12 w-12 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-600/30 mb-3">
+          {/* <div className="h-12 w-12 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-600/30 mb-3">
             <ShieldAlert className="w-6 h-6" />
+          </div> */}
+          <div className="flex justify-center mb-6">
+            <Logo size="lg" showText={true}/>
           </div>
-          <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100">
+          {/* <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100">
             DispatchPulse
-          </h1>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+          </h1> */}
+          <p className="text-xs text-slate-500 dark:text-slate-400">
             Real-time service health & AI incident triage workspace
           </p>
         </div>

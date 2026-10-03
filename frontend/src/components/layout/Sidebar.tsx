@@ -3,6 +3,7 @@ import { NavLink } from "react-router-dom";
 import { Activity, Layers, AlertTriangle, LogOut, Radio } from "lucide-react";
 import { useAuth } from "../../context/useAuth";
 import { Badge } from "../ui/Badge";
+import { Logo } from "../ui/Logo";
 
 export const Sidebar: React.FC = () => {
   const { user, logout } = useAuth();
@@ -18,17 +19,10 @@ export const Sidebar: React.FC = () => {
       <div>
         {/* Brand & Organization */}
         <div className="h-16 flex items-center gap-3 px-6 border-b border-slate-200 dark:border-obsedian-border">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-600 shadow-md shadow-indigo-500/20 text-white font-bold text-lg">
-            DP
-          </div>
-          <div className="flex flex-col overflow-hidden">
-            <span className="font-semibold text-sm tracking-tight text-slate-900 dark:text-slate-100">
-              DispatchPulse
-            </span>
-            <span className="text-[11px] font-mono text-slate-500 truncate">
-              {user?.organization?.name || "Workspace"}
-            </span>
-          </div>
+          <Logo size="md" showText={true} />
+          <span className="text-[10px] font-mono text-slate-500 truncate dark:text-slate-400 ml-11 -mt-1">
+            {user?.organization?.name || "Workspace"}
+          </span>
         </div>
 
         {/* Navigation Links */}
