@@ -100,6 +100,10 @@
 4. **Public Status Page (`/status/:org_slug`):**
    - Ultra-clean view for external customers: "All Systems Operational" or "Partial Outage Detected".
    - 90-day history uptime bars.
+5. **Public Website Availability Checker ("Is It Down Right Now?") (`/is-it-down`):**
+   - Unauthenticated instant URL probe tool for any public domain or endpoint (e.g. Netflix, GitHub).
+   - Live probe diagnostics: HTTP status code, round-trip latency (ms), SSL certificate status, reachable indicator.
+   - Conversion banner encouraging visitors to set up 24/7 monitoring and AI incident triage on DispatchPulse.
 
 ---
 
@@ -193,12 +197,16 @@
 - **F03:** `monitoring` app (`Service`, `HealthCheckLog`, custom admin). [DONE]
 - **F04:** `incidents` app (`Incident`, `IncidentLog`, `AlertRule`, admin wiring). [DONE]
 - **F05:** Seed demo data script (`seed_demo_data`). [DONE]
-- **F06:** Automated HTTP Health Pinger engine & alert threshold trigger.
-- **F07:** DRF API ViewSets, Serializers & incident lifecycle actions.
-- **F08:** React Vite Setup & Tailwind modern SRE workspace theme.
-- **F09:** Frontend Dashboard (KPI cards, Incident Table, 90-day Service Bars).
-- **F10:** Incident Detail Drawer & Public Status Page (`/status/:slug`).
-- **F11:** AI Triage Pipeline (Groq / Gemini free-tier structured JSON output).
+- **F06:** Automated HTTP Health Pinger engine & alert threshold trigger. [DONE]
+- **F07:** DRF API ViewSets, Serializers & incident lifecycle actions. [DONE]
+- **F08:** React Vite Setup & Tailwind modern SRE workspace theme. [DONE]
+- **F09:** Frontend Dashboard (KPI cards, Incident Table, 90-day Service Bars). [DONE]
+- **F10:** Incident Detail Drawer & Public Status Page (`/status/:slug`). [DONE]
+- **F11:** Automated AI Incident Triage Pipeline (Groq / Gemini free-tier structured JSON output worker + trigger UI). [NEXT]
+- **F12:** Services Management & Interactive Operations (`/services` grid cards, target CRUD modal, "Ping All Now" batch health probe). [PENDING]
+- **F13:** Dedicated Incident Archive & Queue Center (`/incidents` full filterable table by severity/status/service, search & pagination). [PENDING]
+- **F14:** Public Instant Website Availability Checker ("Is It Down Right Now?" `/is-it-down` page, `POST /api/public/probe/` with SSRF protection & rate limiting). [PENDING]
+- **F15:** Alert Rules Configuration UI & Outage Simulator ("Simulate Crash / Webhook" trigger, dynamic threshold tuning). [PENDING]
 ---
 
 ## 9. Operating Protocol

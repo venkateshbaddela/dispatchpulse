@@ -6,6 +6,7 @@ from rest_framework.response import Response
 
 from .models import AlertRule, Incident, IncidentLog
 from .serializers import AlertRuleSerializer, IncidentLogSerializer, IncidentSerializer
+from .ai import analyze_incident
 # Create your views here.
 
 class IncidentViewSet(viewsets.ModelViewSet):
@@ -89,6 +90,29 @@ class IncidentViewSet(viewsets.ModelViewSet):
 
         return Response(IncidentSerializer(incident).data, status=status.HTTP_200_OK)
 
+    @action(detail=True, methods=['post'], url_path="triage")
+    def triage(self, request, pk=None):
+        """Run AI root-cause analysis on incident telemetry and update ai_summary. """    
+        incident = self.get_object()
+
+        diagnosis = analyze_incident(
+            raw_logs=incident.raw_logs,
+            error_type=incident.error_type,
+            title=incident.title
+        )
+
+        incident.ai_summary = diagnosis
+        incident.save(update_fields=['ai_summary'])
+
+        confidence_pct = int(diagnosis.get('confidence', 0.0) * 100)
+        IncidentLog.objects.create(
+            incident=incident,
+            actor=request.user,
+            event_type=IncidentLog.EventType.AI_TRIAGE,
+            note=f"AI Triage generated ({confidence_pct}% confidence): {diagnosis.get('root_cause', '')}",
+        )
+
+        return Response(IncidentSerializer(incident).data, status=status.HTTP_200_OK)
 
 class AlertRuleViewset(viewsets.ModelViewSet):
     serializer_class = AlertRuleSerializer

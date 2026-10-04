@@ -29,10 +29,14 @@ You are the **Senior Full-Stack Architect & Pair Programming Tutor** for **Dispa
 | **F05** | Demo data seeder management command (`python manage.py seed_demo_data`) | **Completed** |
 | **F06** | Telemetry engine (`monitoring/engine.py` concurrent pinger & incident evaluator) | **Completed** |
 | **F07** | DRF API ViewSets, Serializers & incident lifecycle actions (`acknowledge`, `resolve`) | **Completed** |
-| **F08** | React 19 + Vite + Tailwind v4 setup with dual Obsidian Dark/Light theme | **In Progress (Near Completion)** |
-| **F09** | Frontend Operational Dashboard (KPI Bento cards, 90-day latency bars, Incident Table) | **Next Milestone** |
-| **F10** | Incident Detail Drawer, AI Triage UI & Public Status Page (`/status/:slug`) | **Upcoming** |
-| **F11** | Automated AI Incident Triage Pipeline (Groq / Gemini structured JSON triage worker) | **Upcoming** |
+| **F08** | React 19 + Vite + Tailwind v4 setup with dual Obsidian Dark/Light theme | **Completed** (`main`) |
+| **F09** | Frontend Operational Dashboard (KPI Bento cards, 90-day latency bars, Incident Table) | **Completed** (`main`) |
+| **F10** | Incident Detail Drawer, AI Triage UI & Public Status Page (`/status/:slug`) | **Completed** (`main`) |
+| **F11** | Automated AI Incident Triage Pipeline (Groq / Gemini structured JSON triage worker) | **Completed** (`main`) |
+| **F12** | Services Management & Interactive Operations (`/services` grid, target CRUD modal, "Ping All Now" batch probe) | **Next Milestone** |
+| **F13** | Dedicated Incident Archive & Queue Center (`/incidents` full filterable table by severity/status/service, search & pagination) | **Upcoming** |
+| **F14** | Public Instant Website Availability Checker ("Is It Down Right Now?" `/is-it-down`, `POST /api/public/probe/` with SSRF protection & rate limiting) | **Upcoming** |
+| **F15** | Alert Rules Configuration UI & Outage Simulator ("Simulate Crash / Webhook" trigger, dynamic threshold tuning) | **Upcoming** |
 
 ---
 
@@ -192,6 +196,9 @@ Django is configured with `APPEND_SLASH=True`. **Every single API route MUST end
 | `POST` | `/api/incidents/{id}/acknowledge/` | Acknowledge incident | Yes | Sets status to `ACKNOWLEDGED`, sets `acknowledged_at`, creates `IncidentLog` |
 | `POST` | `/api/incidents/{id}/resolve/` | Resolve incident | Yes | Sets status to `RESOLVED`, sets `resolved_at`, creates `IncidentLog` |
 | `GET/POST`| `/api/alert-rules/` | Alert thresholds | Yes | Scoped to authenticated user's organization |
+| `POST` | `/api/incidents/{id}/triage/` | *(Planned F11)* Auto-triage with AI | Yes | LLM structured JSON output, updates `ai_summary`, writes `AI_TRIAGE` log |
+| `POST` | `/api/services/ping-all/` | *(Planned F12)* Concurrent batch probe | Yes | Triggers `probe_all_services_concurrently` across all organization services |
+| `POST` | `/api/public/probe/` | *(Planned F14)* Public instant URL probe | No | Unauthenticated ephemeral probe with SSRF validation and IP rate limiting |
 
 ---
 

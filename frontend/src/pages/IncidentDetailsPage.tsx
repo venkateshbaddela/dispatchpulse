@@ -13,6 +13,7 @@ import {
   Check,
   Activity,
   ShieldAlert,
+  Sparkles,
 } from "lucide-react";
 import { incidentsApi } from "../api/incidents.api";
 import { type IncidentSeverity, type IncidentStatus } from "../types/incident";
@@ -45,11 +46,16 @@ export const IncidentDetailPage: React.FC = () => {
 
   const ackMutation = useMutation({
     mutationFn: () => incidentsApi.acknowledgeIncident(id!),
-    onSuccess: () => invalidateIncidentState,
+    onSuccess: invalidateIncidentState,
   });
 
   const resolveMutation = useMutation({
     mutationFn: () => incidentsApi.resolveIncident(id!),
+    onSuccess: invalidateIncidentState,
+  });
+
+  const triageMutation = useMutation({
+    mutationFn: () => incidentsApi.triageIncident(id!),
     onSuccess: invalidateIncidentState,
   });
 
@@ -168,7 +174,7 @@ export const IncidentDetailPage: React.FC = () => {
         <div className="space-y-6 lg:col-span-2">
           {/* AI Copilot Triage Terminl Card */}
           <div className="rounded-xl border border-purple-500/30 bg-purple-950/10 p-5 dark:border-purple-500/20 dark:bg-purple-950/20 relative overflow-hidden">
-            <div className="flex items-center justify-between pb-3 border-b border-purple-500/20">
+            <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-purple-500/20">
               <div className="flex items-center gap-2">
                 <div className="p-1.5 rounded-lg bg-purple-500/20 text-purple-400">
                   <Bot className="h-5 w-5" />
@@ -182,11 +188,23 @@ export const IncidentDetailPage: React.FC = () => {
                   </p>
                 </div>
               </div>
-              {incident.ai_summary?.confidence && (
-                <span className="rounded-full bg-purple-500/20 px-2.5 py-0.5 text-xs font-semibold text-purple-300">
-                  {Math.round(incident.ai_summary.confidence * 100)}% Confidence
-                </span>
-              )}
+              <div className="flex items-center gap-2">
+                {incident.ai_summary?.confidence && (
+                  <span className="rounded-full bg-purple-500/20 px-2.5 py-0.5 text-xs font-semibold text-purple-300">
+                    {Math.round(incident.ai_summary.confidence * 100)}% Confidence
+                  </span>
+                )}
+                <Button
+                  variant="violet"
+                  size="sm"
+                  className="gap-1.5"
+                  isLoading={triageMutation.isPending}
+                  onClick={() => triageMutation.mutate()}
+                >
+                  <Sparkles className="h-3.5 w-3.5" />
+                  {incident.ai_summary?.root_cause ? "Re-Triage with AI" : "Auto-Triage with AI"}
+                </Button>
+              </div>
             </div>
             <div className="mt-4 space-y-4">
               <div>

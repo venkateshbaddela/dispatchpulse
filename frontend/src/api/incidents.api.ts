@@ -21,4 +21,9 @@ export const incidentsApi = {
         const response = await apiClient.post<Incident>(`/incidents/${incidentId}/resolve/`, {note});
         return response.data;
     },
+
+    triageIncident: async(incidentId: string): Promise<Incident> => {
+        const response = await apiClient.post<Incident>(`/incidents/${incidentId}/triage/`);
+        return response.data
+    }
 };

@@ -2,7 +2,7 @@
 
 > **Target Audience:** AI Coding Assistants & Human Developer  
 > **Last Updated:** October 2026  
-> **Active Branch:** `feat/f09-frontend-dashboard` (Preparing `feat/f10-incident-detail-status-page`)  
+> **Active Branch:** `main` (Preparing `feat/f12-services-management`)  
 > **Master Reference Files:** [`GEMINI_KNOWLEDGE_BASE.md`](file:///workspaces/dispatchpulse/GEMINI_KNOWLEDGE_BASE.md) | [`ERRORS_AND_BUGS_SOLVED.md`](file:///workspaces/dispatchpulse/ERRORS_AND_BUGS_SOLVED.md) | [`MODELS_DESIGN.md`](file:///workspaces/dispatchpulse/MODELS_DESIGN.md)
 
 ---
@@ -33,9 +33,13 @@
 | **F06** | Telemetry engine (`monitoring/engine.py` concurrent pinger & alert runner) | **Completed** | `main` |
 | **F07** | DRF API ViewSets, Serializers & incident lifecycle actions (`acknowledge`, `resolve`) | **Completed** | `main` |
 | **F08** | React 19 + Vite Setup & Tailwind modern SRE Obsidian workspace theme | **Completed** | `main` (`68f9ae6`) |
-| **F09** | Frontend Operational Dashboard (KPI Bento cards, 90-day latency bars, Incident Table) | **Completed** | `feat/f09-frontend-dashboard` |
-| **F10** | Incident Detail Drawer, AI Triage UI & Public Status Page (`/status/:slug`) | **Next** | `feat/f10-incident-detail-status-page` |
-| **F11** | Automated AI Incident Triage Pipeline (Groq / Gemini structured JSON output) | **Upcoming** | `feat/f11-ai-triage-pipeline` |
+| **F09** | Frontend Operational Dashboard (KPI Bento cards, 90-day latency bars, Incident Table) | **Completed** | `main` (`15a7fe7`) |
+| **F10** | Incident Detail Drawer, AI Triage UI & Public Status Page (`/status/:slug`) | **Completed** | `main` (`8aa8ecf`) |
+| **F11** | Automated AI Incident Triage Pipeline (Groq / Gemini structured JSON output worker + trigger UI) | **Completed** | `main` |
+| **F12** | Services Management & Interactive Operations (`/services` grid, target CRUD modal, "Ping All Now" batch probe) | **Next** | `feat/f12-services-management` |
+| **F13** | Dedicated Incident Archive & Queue Center (`/incidents` full filterable table by severity/status/service, search & pagination) | **Upcoming** | `feat/f13-incident-queue-page` |
+| **F14** | Public Instant Website Availability Checker ("Is It Down Right Now?" `/is-it-down`, `POST /api/public/probe/` with SSRF protection & rate limiting) | **Upcoming** | `feat/f14-public-site-checker` |
+| **F15** | Alert Rules Configuration UI & Outage Simulator ("Simulate Crash / Webhook" trigger, dynamic threshold tuning) | **Upcoming** | `feat/f15-alert-rules-simulator` |
 
 ---
 
@@ -47,6 +51,7 @@
 3. **No `username` field:** `accounts.User` uses `email` as `USERNAME_FIELD`. Never query or write `user.username`.
 4. **Nested Serializers:** Foreign key user fields in incidents (`assigned_to`, `actor`) return nested `UserSerializer` objects, not raw integer IDs.
 5. **Registration Payload:** Frontend must send `org_name` (not `organization_name`).
+6. **SSRF & Public Probe Guardrails:** Any unauthenticated public probing endpoints (e.g. F14) must validate target URLs against private/internal IP ranges (RFC 1918, loopback, cloud metadata 169.254.169.254) and enforce strict DRF rate limiting.
 
 ### Frontend Guardrails (React 19 + Tailwind v4)
 1. **Tailwind v4 Setup:** Uses `@import "tailwindcss";` with `@theme` block in `frontend/src/index.css`.
