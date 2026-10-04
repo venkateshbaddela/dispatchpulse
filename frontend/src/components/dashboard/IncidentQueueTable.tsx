@@ -10,6 +10,7 @@ import {
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { incidentsApi } from "../../api/incidents.api";
 import { type Incident, type IncidentSeverity } from "../../types/incident";
+import { Link } from "react-router-dom";
 
 interface IncidentQueueTableProps {
   incidents: Incident[];
@@ -140,9 +141,11 @@ export const IncidentQueueTable: React.FC<IncidentQueueTableProps> = ({
                     {getSeverityBadge(incident.severity)}
                   </td>
                   <td className="px-5 py-4">
-                    <div className="font-semibold text-slate-900 dark:text-slate-100">
+                    <Link 
+                    to={`/incidents/${incident.id}`}
+                    className="font-semibold text-slate-900 dark:text-slate-100">
                       {incident.title}
-                    </div>
+                    </Link>
                     <div className="text-xs font-mono text-slate-400 dark:text-slate-500 mt-0.5">
                       {incident.error_type}
                     </div>

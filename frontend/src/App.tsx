@@ -10,6 +10,7 @@ import { Dashboard } from "./pages/Dashboard";
 import { ServicesPage } from "./pages/ServicesPage";
 import { IncidentDetailPage } from "./pages/IncidentDetailsPage";
 import { IncidentsPage } from "./pages/IncidentsPage";
+import { PublicStatusPage } from "./pages/PublicStatusPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -27,9 +28,11 @@ export default function App() {
       <ThemeProvider>
         <AuthProvider>
           <BrowserRouter>
-            <Routes>
-              {/* Public Autentication Route */}
+            <Routes>           
+              {/* Public Route */}
               <Route path="/login" element={<LoginPage />} />
+              <Route path="/status/:slug" element={<PublicStatusPage/>}/>
+
 
               {/* Protected Workspace Layout */}
               <Route element={<ProtectedRoute />}>
