@@ -1,3 +1,5 @@
+import uuid
+from django.db.models import Q
 from django.utils import timezone
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
@@ -25,13 +27,34 @@ class IncidentViewSet(viewsets.ModelViewSet):
         )
 
         status_param = self.request.query_params.get('status')
-        if status_param:
+        if status_param and status_param.strip().upper() != 'ALL':
             statuses = [s.strip().upper() for s in status_param.split(',') if s.strip()] 
-            queryset = queryset.filter(status__in=statuses)
+            if statuses:
+                queryset = queryset.filter(status__in=statuses)
 
         severity_param = self.request.query_params.get('severity')
-        if severity_param:
-            queryset = queryset.filter(severity=severity_param.upper())
+        if severity_param and severity_param.strip().upper() != 'ALL':
+            queryset = queryset.filter(severity=severity_param.strip().upper())
+
+        service_param = self.request.query_params.get('service_id') or self.request.query_params.get('service')
+        if service_param and service_param.strip().lower() != 'all':
+            service_clean = service_param.strip()
+            try:
+                uuid.UUID(str(service_clean))
+                queryset = queryset.filter(service_id=service_clean)
+            except (ValueError, AttributeError):
+                queryset = queryset.filter(service__name__iexact=service_clean)
+
+        search_param = self.request.query_params.get('search')
+        if search_param:
+            query = search_param.strip()
+            if query:
+                queryset = queryset.filter(
+                    Q(title__icontains=query) |
+                    Q(raw_logs__icontains=query) |
+                    Q(service__name__icontains=query) |
+                    Q(error_type__icontains=query)
+                )
         
         return queryset.order_by('-created_at')
 

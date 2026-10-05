@@ -36,8 +36,8 @@
 | **F09** | Frontend Operational Dashboard (KPI Bento cards, 90-day latency bars, Incident Table) | **Completed** | `main` (`15a7fe7`) |
 | **F10** | Incident Detail Drawer, AI Triage UI & Public Status Page (`/status/:slug`) | **Completed** | `main` (`8aa8ecf`) |
 | **F11** | Automated AI Incident Triage Pipeline (Groq / Gemini structured JSON output worker + trigger UI) | **Completed** | `main` |
-| **F12** | Services Management & Interactive Operations (`/services` grid, target CRUD modal, "Ping All Now" batch probe) | **Next** | `feat/f12-services-management` |
-| **F13** | Dedicated Incident Archive & Queue Center (`/incidents` full filterable table by severity/status/service, search & pagination) | **Upcoming** | `feat/f13-incident-queue-page` |
+| **F12** | Services Management & Interactive Operations (`/services` grid, target CRUD modal, "Ping All Now" batch probe) | **Completed** | `main` (`8aa550f`, `d39c3b4`) |
+| **F13** | Dedicated Incident Archive & Queue Center (`/incidents` full filterable table by severity/status/service, search & pagination) | **Completed** | `feat/f13-incident-queue-page` |
 | **F14** | Public Instant Website Availability Checker ("Is It Down Right Now?" `/is-it-down`, `POST /api/public/probe/` with SSRF protection & rate limiting) | **Upcoming** | `feat/f14-public-site-checker` |
 | **F15** | Alert Rules Configuration UI & Outage Simulator ("Simulate Crash / Webhook" trigger, dynamic threshold tuning) | **Upcoming** | `feat/f15-alert-rules-simulator` |
 

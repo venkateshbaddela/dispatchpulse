@@ -137,7 +137,7 @@ export const ServicesList: React.FC<ServicesListProps> = ({
             </div>
 
             {/* Segmented Telemetry Bar */}
-            <div className="pt-2 border-t border-slate-100 dark:border-obsidian-border/60">
+            <div className="pt-2 border-t border-slate-200 dark:border-obsidian-border">
             <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 mb-2">
                 <span className="inline-flex items-center gap-1 font-medium">
                     <Zap className="w-3 h-3 text-cyan-500"/>

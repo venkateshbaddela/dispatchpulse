@@ -36,6 +36,8 @@
 | **B23** | Frontend / Linter | `AuthContext.tsx` & `ThemeContext.tsx` | ESLint fast refresh errors (`react-refresh/only-export-components`) | Exported Context objects & hooks from component files | Separated `useAuth.ts` and `useTheme.ts`; added ESLint ignore comments on context exports | **Resolved** |
 | **B24** | Architecture | Project Root | Redundant dependency tree | Accidental root `package.json` and `package-lock.json` | Removed redundant root files | **Resolved** |
 | **B25** | UI / Styling | `index.css` & UI Components | Border brightness flare during theme toggle | Opacity interpolation mismatch: `dark:border-white/5` interpolates at 50% pure white over darkening background | Replaced `dark:border-white/5` with `dark:border-obsidian-border` (`#1E2333`) / `dark:border-slate-800` | **Resolved** |
+| **B26** | UI / Styling | `index.css` & `IncidentsPage.tsx` | Bright white browser horizontal scrollbar across dark tables | Missing `color-scheme: dark` and custom scrollbar CSS rules causing native light scrollbar rails | Added `color-scheme: dark`, WebKit 6px scrollbars (`#1E2333` thumb, transparent track), and modern standard `scrollbar-color` | **Resolved** |
+| **B27** | UI / Styling | `index.css`, `IncidentsPage.tsx`, `IncidentQueueTable.tsx` | Borders brightly lighting up like neon lines during theme toggle | Universal wildcard transition included `border-color`, causing borders to interpolate through high-luminance midpoint (~55% lightness) against rapidly darkening background, compounded by semi-transparent opacity tokens | Removed `border-color` from universal wildcard transition (borders switch instantly to destination solid palette) and replaced all remaining translucent border/divide modifiers with solid tokens | **Resolved** |
 
 ---
 
@@ -245,6 +247,35 @@
      // eslint-disable-next-line react-refresh/only-export-components
      export const AuthContext = createContext<AuthContextType | undefined>(undefined);
      ```
+
+#### B26. Unstyled Bright White Horizontal Scrollbar in Dark Mode
+* **File:** `frontend/src/index.css` & `frontend/src/pages/IncidentsPage.tsx`
+* **Symptom:** On tables with horizontal scrolling (`overflow-x-auto`), the browser rendered a glaring white scrollbar track and thumb in dark mode.
+* **Root Cause:** Modern browsers default to system light theme scrollbars unless explicitly instructed otherwise via `color-scheme: dark;` and custom scrollbar rules. In Tailwind v4, without WebKit pseudo-elements and the CSS `scrollbar-color` specification, dark mode tables show light scrollbars.
+* **Fix Applied:**
+  1. Configured `:root { color-scheme: light; }` and `.dark { color-scheme: dark; }` to instruct the browser rendering engine to use native dark system widgets.
+  2. Added sleek 6px WebKit scrollbars with `#1E2333` (Obsidian border token) thumb and transparent track in dark mode.
+  3. Added modern CSS standard `scrollbar-width: thin` and `scrollbar-color: #1E2333 transparent` on `.dark *`.
+
+#### B27. Border Brightness Flare on Universal Transition During Theme Toggle
+* **Files:** `frontend/src/index.css`, `frontend/src/pages/IncidentsPage.tsx`, `frontend/src/components/dashboard/IncidentQueueTable.tsx`, `frontend/src/components/dashboard/ServicesList.tsx`
+* **Symptom:** When toggling the theme, borders across cards, toolbars, tables, and buttons brightly lit up like neon wires before fading to dark.
+* **Root Cause:**
+  1. The universal CSS transition `*, *::before, *::after` contained `border-color`. When toggling from light (`border-slate-200` at ~93% lightness) to dark (`#1E2333` at ~16% lightness), the background swiftly darkened while the border color linearly interpolated through high-luminance light gray values (~55% lightness at midpoint), creating an artificial contrast spike against the dark background.
+  2. Lingering semi-transparent opacity tokens (`dark:border-obsidian-border/80`, `dark:divide-obsidian-border/70`, `dark:border-amber-700/50`) compounded the flare by interpolating alpha channels against changing backgrounds.
+* **Fix Applied:**
+  1. Removed `border-color` from the universal wildcard transition in `index.css`:
+     ```css
+     *,
+     *::before,
+     *::after {
+       transition-property: background-color, color, fill, stroke;
+       transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+       transition-duration: 150ms;
+     }
+     ```
+     This causes border colors to instantly snap to their solid theme palette tokens (`#1E2333` in dark mode, `#e2e8f0` in light mode) while backgrounds and text smoothly cross-fade over 150ms with zero luminance flare.
+  2. Replaced all remaining translucent border and divide classes with solid tokens (`dark:border-obsidian-border`, `dark:divide-obsidian-border`, `dark:border-indigo-900`, `dark:border-amber-800`, `dark:border-emerald-800`).
 
 ---
 

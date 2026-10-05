@@ -1,8 +1,16 @@
 import { apiClient } from "./client";
 import type { Incident } from "../types/incident";
 
+export interface GetIncidentsParams {
+    status?: string;
+    severity?: string;
+    service?: string;
+    service_id?: string;
+    search?: string;
+}
+
 export const incidentsApi = {
-    getIncidents: async (params?:{status?: string; severity?:string}): Promise<Incident[]> => {
+    getIncidents: async (params?: GetIncidentsParams): Promise<Incident[]> => {
         const response = await apiClient.get<Incident[]>('/incidents/', {params});
         return response.data;
     },

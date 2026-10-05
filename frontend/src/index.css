@@ -16,17 +16,64 @@
 }
 
 
-/* Smooth fade for backgrounds and text */ 
-*,
-*::before,
-*::after {
-  transition-property: background-color, border-color, color, fill, stroke;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 150ms;
-}
+
 
   
 
+
+:root {
+  color-scheme: light;
+}
+
+.dark {
+  color-scheme: dark;
+}
+
+/* Custom SRE Obsidian Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.dark ::-webkit-scrollbar-track,
+:where(.dark, .dark *) ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.dark ::-webkit-scrollbar-thumb,
+:where(.dark, .dark *) ::-webkit-scrollbar-thumb {
+  background: #1E2333;
+  border-radius: 9999px;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover,
+:where(.dark, .dark *) ::-webkit-scrollbar-thumb:hover {
+  background: #2D3748;
+}
+
+/* Modern CSS standards for Firefox & Chromium */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.dark *,
+:where(.dark, .dark *) * {
+  scrollbar-color: #1E2333 transparent;
+}
 
 body {
   margin: 0;

@@ -127,7 +127,7 @@ export const IncidentQueueTable: React.FC<IncidentQueueTableProps> = ({
               <th className="px-5 py-3.5 text-right">Quick Triage</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-obsidian-border/70">
+          <tbody className="divide-y divide-slate-100 dark:divide-obsidian-border">
             {incidents.map((incident) => {
               const isActioning = activeActionId === incident.id;
               const isAcknowledged = incident.status === "ACKNOWLEDGED";
@@ -193,7 +193,7 @@ export const IncidentQueueTable: React.FC<IncidentQueueTableProps> = ({
                         type="button"
                         onClick={() => ackMutation.mutate(incident.id)}
                         disabled={isActioning}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-md bg-amber-50 hover:bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:hover:bg-amber-900/60 dark:text-amber-300 border border-amber-300 dark:border-amber-700/50 transition-colors disabled:opacity-50 cursor-pointer"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-md bg-amber-50 hover:bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:hover:bg-amber-900/60 dark:text-amber-300 border border-amber-300 dark:border-amber-800 transition-colors disabled:opacity-50 cursor-pointer"
                       >
                         <CheckSquare className="w-3 h-3" />
                         Ack
@@ -203,7 +203,7 @@ export const IncidentQueueTable: React.FC<IncidentQueueTableProps> = ({
                       type="button"
                       onClick={() => resolveMutation.mutate(incident.id)}
                       disabled={isActioning}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-md bg-emerald-50 hover:bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/60 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700/50 transition-colors disabled:opacity-50 cursor-pointer"
+                      className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-md bg-emerald-50 hover:bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/60 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 transition-colors disabled:opacity-50 cursor-pointer"
                     >
                       <CheckCircle2 className="w-3 h-3" />
                       Resolve
