@@ -159,3 +159,63 @@ def probe_all_services_concurrently(organization=None, max_workers: int = 10) ->
                 })
 
     return results
+
+
+def probe_ephemeral_url(target_url: str, timeout_seconds: float = 5.0) -> dict:
+    """
+    Performs an ephemeral, SSRF-validated HTTP availability check for public visitors.
+    Does not save to HealthCheckLog (memory only).
+    """
+    from .ssrf import validate_public_url
+
+    clean_url = target_url.strip()
+    if "://" not in clean_url:
+        clean_url = "https://" + clean_url
+
+    is_safe, error_msg, resolved_ip = validate_public_url(clean_url)
+    if not is_safe:
+        return {
+            "target_url": clean_url,
+            "is_up": False,
+            "status_code": None,
+            "latency_ms": None,
+            "resolved_ip": None,
+            "checked_at": timezone.now().isoformat(),
+            "error": error_msg,
+        }
+
+    start_time = time.perf_counter()
+    status_code = None
+    is_up = False
+    error = None
+
+    try:
+        response = requests.get(
+            clean_url,
+            timeout=timeout_seconds,
+            headers={"User-Agent": "DispatchPulse-Probe/1.0 (+https://dispatchpulse.com)"},
+            allow_redirects=True,
+        )
+        status_code = response.status_code
+        # Consider 2xx and 3xx as UP. 4xx indicates client error / authentication, but host is UP.
+        is_up = response.status_code < 500
+        if response.status_code >= 400:
+            error = f"HTTP {response.status_code}: {response.reason}"
+    except requests.exceptions.Timeout:
+        error = f"Connection timed out after {timeout_seconds} seconds."
+    except requests.exceptions.ConnectionError:
+        error = "Connection refused or target host is unreachable."
+    except requests.exceptions.RequestException as exc:
+        error = str(exc)
+
+    latency_ms = int((time.perf_counter() - start_time) * 1000)
+
+    return {
+        "target_url": clean_url,
+        "is_up": is_up,
+        "status_code": status_code,
+        "latency_ms": latency_ms if status_code else None,
+        "resolved_ip": resolved_ip,
+        "checked_at": timezone.now().isoformat(),
+        "error": error,
+    }

@@ -1,5 +1,5 @@
 import { apiClient } from "./client";
-import type { Service, KPISummary, HealthCheckLog, PublicStatusData, CreateServicePayload, UpdateServicePayload, BatchPingResult } from "../types/service";
+import type { Service, KPISummary, HealthCheckLog, PublicStatusData, CreateServicePayload, UpdateServicePayload, BatchPingResult, PublicProbeResult } from "../types/service";
 
 export const servicesApi = {
     getServices: async (): Promise<Service[]> => {
@@ -39,5 +39,10 @@ export const servicesApi = {
     getPublicStatus: async (slug:string): Promise<PublicStatusData> => {
         const response = await apiClient.get<PublicStatusData>(`/status/${slug}/`)
         return response.data
+    },
+
+    probePublicUrl: async (url: string): Promise<PublicProbeResult> => {
+        const response = await apiClient.post<PublicProbeResult>('/public/probe/', { url });
+        return response.data;
     }
 }

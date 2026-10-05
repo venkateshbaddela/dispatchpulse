@@ -12,7 +12,7 @@ from accounts.views import (
 )
 
 from incidents.views import AlertRuleViewset, IncidentViewSet
-from monitoring.views import DashboardKPIView, PublicStatusView, ServiceViewSet
+from monitoring.views import DashboardKPIView, PublicProbeView, PublicStatusView, ServiceViewSet
 
 router = DefaultRouter()
 router.register(r'services', ServiceViewSet, basename='service')
@@ -30,6 +30,7 @@ urlpatterns = [
     # Operationsl & KPI  Endpoints
     path('api/dashboard/kpis/', DashboardKPIView.as_view(), name='dashboard-kpis'),
     path('api/status/<slug:slug>/', PublicStatusView.as_view(), name='public-status'),
+    path('api/public/probe/', PublicProbeView.as_view(), name='public-probe'),
     # ViewsSet Router URLs
     path('api/', include(router.urls)),
 ]

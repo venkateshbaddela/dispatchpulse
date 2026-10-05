@@ -1,52 +1,56 @@
-# Current Feature: F13 — Dedicated Incident Archive & Queue Center (/incidents)
+# Current Feature: F14 — Public Instant Website Availability Checker ("Is It Down Right Now?" `/is-it-down`)
 
 ## Status: COMPLETED
 
 ### Completed Objectives
-- [x] **Backend QuerySet Enhancements (`backend/incidents/views.py`):**
-  - Enhanced `IncidentViewSet.get_queryset` with case-insensitive search (`Q(title__icontains=query) | Q(raw_logs__icontains=query) | Q(service__name__icontains=query) | Q(error_type__icontains=query)`).
-  - Added multi-tenant `service_id` and `service` filtering supporting UUIDs and service names.
-  - Added flexible `status` filtering (supporting comma-separated statuses and `ALL`).
-  - Added `severity` filtering (supporting single severity and `ALL`).
-  - Implemented comprehensive unit test suite in `backend/incidents/tests.py` verifying status, severity, service ID/name, search queries, and multi-tenant isolation.
-- [x] **Frontend API Client Integration (`frontend/src/api/incidents.api.ts`):**
-  - Added typed interface `GetIncidentsParams` supporting `status`, `severity`, `service`, `service_id`, and `search`.
-  - Updated `incidentsApi.getIncidents` to pass query params while preserving the trailing slash (`/incidents/`).
-- [x] **Interactive Cockpit UI (`frontend/src/pages/IncidentsPage.tsx`):**
-  - Built comprehensive SRE Filter Toolbar featuring:
-    - Status segmented tabs (`ALL`, `ACTIVE`, `TRIGGERED`, `ACKNOWLEDGED`, `RESOLVED`) with color-coded status badges.
-    - Debounced search input (300ms delay) with instant clear action.
-    - Severity filter dropdown (`ALL`, `P1`–`P4`).
-    - Monitored Service filter dropdown dynamically populated from `servicesApi.getServices`.
-    - Reactive "Reset Filters" action when any filter/search is active.
-    - Refresh action triggering React Query refetch.
-  - Built interactive SRE Incident Queue Table featuring:
-    - Glowing animated ping badges on P1 Critical incidents.
-    - Title, error type, and service badge with direct navigation links to `/incidents/:id`.
-    - Status badges (`Triggered`, `Acknowledged`, `Resolved`).
-    - AI Triage diagnosis indicators showing root cause snippet and confidence percentage.
-    - Elapsed time formatting and assigned responder profiles.
-    - Inline quick triage actions (`Ack` and `Resolve` mutations) with automated query cache invalidation.
-    - Robust empty and loading skeleton states.
-    - Strict adherence to solid border tokens (`border-slate-200 dark:border-obsidian-border`).
+- [x] **Backend SSRF Protection Engine (`backend/monitoring/ssrf.py`):**
+  - Robust URL parsing and scheme restriction (strictly enforces `http` and `https`, rejects `file`, `ftp`, `gopher`, `data`, etc.).
+  - DNS resolution using `socket.getaddrinfo` with IPv4/IPv6 support.
+  - Comprehensive IP boundary validation: blocks private RFC 1918 subnets (`10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`), loopback (`127.0.0.1`), link-local/cloud metadata (`169.254.169.254`), reserved, and multicast ranges.
+- [x] **Ephemeral Availability Probe Engine (`backend/monitoring/engine.py`):**
+  - Added `probe_ephemeral_url(target_url, timeout_seconds=5.0)`.
+  - Ephemeral memory-only execution that does not pollute the `HealthCheckLog` database table.
+  - High-precision latency calculation using `time.perf_counter()`.
+  - Custom `DispatchPulse-Probe/1.0` User-Agent header with redirect following and status categorization (2xx/3xx/4xx vs 5xx / timeouts).
+- [x] **Unauthenticated Public Endpoint & Rate Limiting (`backend/monitoring/views.py` & `backend/config/urls.py`):**
+  - Added `PublicProbeThrottle(AnonRateThrottle)` enforcing a burst limit of 20 requests/minute per client IP.
+  - Implemented `PublicProbeView` (`POST /api/public/probe/`) with `permission_classes = [AllowAny]`.
+  - Enforced strict trailing slash convention (`/api/public/probe/`).
+  - Implemented 9 unit tests in `backend/monitoring/tests.py` covering valid HTTP probe, private IP rejection, loopback rejection, AWS metadata rejection, invalid scheme rejection, and API view behavior.
+- [x] **Frontend API Client & Typing (`frontend/src/types/service.ts` & `frontend/src/api/services.api.ts`):**
+  - Defined `PublicProbeResult` TypeScript interface (`target_url`, `is_up`, `status_code`, `latency_ms`, `resolved_ip`, `checked_at`, `error`).
+  - Added `servicesApi.probePublicUrl(url)` calling `POST /public/probe/`.
+- [x] **Public Availability Checker UI (`frontend/src/pages/PublicProbePage.tsx`):**
+  - Responsive Obsidian SRE design system layout adhering to solid borders (`border-slate-200 dark:border-obsidian-border`).
+  - Quick-preset chips for testing popular services (GitHub, Cloudflare, Google, Netflix, AWS).
+  - Diagnostic metrics grid:
+    - Availability status banner (Operational vs Unreachable / Degraded).
+    - Status code pill with HTTP semantics explanation.
+    - Latency gauge with color-graded millisecond response time.
+    - Resolved IP card showing public destination IP.
+    - SSRF security notice explaining protected perimeter boundaries.
+  - Conversion / Growth CTA card linking visitors to DispatchPulse 24/7 automated alerting.
+- [x] **Navigation & Route Registration (`frontend/src/App.tsx` & `frontend/src/components/layout/Sidebar.tsx`):**
+  - Added `/is-it-down` public route in `App.tsx`.
+  - Added "Is It Down?" nav item with Globe icon in `Sidebar.tsx`.
 
 ### Verification Gates Passed
 - [x] `npm run lint` passes with 0 errors / 0 warnings (`eslint .`).
 - [x] `npx tsc -b` compiles cleanly with 0 type errors.
 - [x] `npm run build` succeeds generating optimized production bundles.
 - [x] Django system checks pass with 0 issues (`python manage.py check`).
-- [x] Django unit tests pass with 6/6 tests OK (`python manage.py test incidents`).
+- [x] Django unit tests pass with 15/15 tests OK (`python manage.py test monitoring incidents`).
+- [x] Live end-to-end `curl` verification against running dev server:
+  - `https://example.com` -> 200 OK, latency 238ms, resolved IP.
+  - `http://127.0.0.1:8000` -> 400 Bad Request, SSRF loopback security warning.
+  - `http://169.254.169.254/...` -> 400 Bad Request, cloud metadata security warning.
+  - `http://192.168.1.1` -> 400 Bad Request, private IP security warning.
+  - `file:///etc/passwd` -> 400 Bad Request, unsupported scheme warning.
 
 ---
 
 ### Transition Gate & Remaining Roadmap Backlog
 
-- **Immediate Next Feature:** **F14 — Public Instant Website Availability Checker ("Is It Down Right Now?" `/is-it-down`)**
-  - Unauthenticated ephemeral probe tool for arbitrary URLs (e.g., Netflix, GitHub).
-  - Backend `POST /api/public/probe/` with SSRF protection & rate limiting.
-  - Growth/conversion CTA for visitors to set up 24/7 monitoring.
-
-- **Remaining Backlog:**
-  - **F15:** **Alert Rules Configuration UI & Outage Simulator**
-    - Alert rule thresholds customization (`consecutive_failures`, `timeout_ms`).
-    - Dashboard "Simulate Crash / Webhook" trigger to verify alert transitions.
+- **Immediate Next Feature:** **F15 — Alert Rules Configuration UI & Outage Simulator**
+  - Alert rule thresholds customization (`consecutive_failures`, `timeout_ms`).
+  - Dashboard "Simulate Crash / Webhook" trigger to verify alert transitions and AI triage pipeline.

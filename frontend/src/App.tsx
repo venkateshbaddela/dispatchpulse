@@ -11,6 +11,7 @@ import { ServicesPage } from "./pages/ServicesPage";
 import { IncidentDetailPage } from "./pages/IncidentDetailsPage";
 import { IncidentsPage } from "./pages/IncidentsPage";
 import { PublicStatusPage } from "./pages/PublicStatusPage";
+import { PublicProbePage } from "./pages/PublicProbePage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -29,9 +30,10 @@ export default function App() {
         <AuthProvider>
           <BrowserRouter>
             <Routes>           
-              {/* Public Route */}
+              {/* Public Routes */}
               <Route path="/login" element={<LoginPage />} />
               <Route path="/status/:slug" element={<PublicStatusPage/>}/>
+              <Route path="/is-it-down" element={<PublicProbePage />} />
 
 
               {/* Protected Workspace Layout */}

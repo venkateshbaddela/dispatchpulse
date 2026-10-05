@@ -1,6 +1,6 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
-import { Activity, Layers, AlertTriangle, LogOut, Radio } from "lucide-react";
+import { Activity, Layers, AlertTriangle, LogOut, Radio, Globe } from "lucide-react";
 import { useAuth } from "../../context/useAuth";
 import { Badge } from "../ui/Badge";
 import { Logo } from "../ui/Logo";
@@ -12,6 +12,7 @@ export const Sidebar: React.FC = () => {
     { label: "Dashboard", path: "/", icon: Activity },
     { label: "Services", path: "/services", icon: Layers },
     { label: "Incidents", path: "/incidents", icon: AlertTriangle },
+    { label: "Is It Down?", path: "/is-it-down", icon: Globe },
   ];
 
   return (

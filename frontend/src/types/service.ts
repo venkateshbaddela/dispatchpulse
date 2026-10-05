@@ -63,3 +63,13 @@ export interface BatchPingResult {
   success: number;
   failed: number;
 }
+
+export interface PublicProbeResult {
+  target_url: string;
+  is_up: boolean;
+  status_code: number | null;
+  latency_ms: number | null;
+  resolved_ip: string | null;
+  checked_at: string;
+  error: string | null;
+}

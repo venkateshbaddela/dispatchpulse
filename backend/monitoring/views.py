@@ -6,11 +6,12 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.throttling import AnonRateThrottle
 from rest_framework.views import APIView
 
 from accounts.models import Organization
 from incidents.models import Incident
-from .engine import probe_single_service, probe_all_services_concurrently
+from .engine import probe_single_service, probe_all_services_concurrently, probe_ephemeral_url
 from .models import HealthCheckLog, Service
 from .serializers import HealthCheckLogSerializer, ServiceSerializer
 
@@ -149,4 +150,33 @@ class PublicStatusView(APIView):
             },
             status=status.HTTP_200_OK
         )
+
+
+class PublicProbeThrottle(AnonRateThrottle):
+    rate = '20/minute'
+
+
+class PublicProbeView(APIView):
+    """
+    Public ephemeral website availability checker ('Is It Down Right Now?').
+    Unauthenticated with SSRF protection and IP-based rate limiting.
+    """
+    permission_classes = [AllowAny]
+    throttle_classes = [PublicProbeThrottle]
+
+    def post(self, request):
+        url = request.data.get('url', '').strip()
+        if not url:
+            return Response(
+                {"error": "Please provide a valid target URL to check."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        result = probe_ephemeral_url(url)
+        # If SSRF blocked, return HTTP 400 with the security warning
+        if result.get("error") and "Security Warning" in result["error"]:
+            return Response(result, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(result, status=status.HTTP_200_OK)
+
 
