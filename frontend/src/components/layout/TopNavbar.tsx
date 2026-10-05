@@ -7,7 +7,7 @@ export const TopNavbar: React.FC = () => {
   const { theme, toggleTheme } = useTheme();
 
   return (
-    <header className="h-16 shrink-0 flex items-center justify-between px-6 border-b border-slate-200 dark:border-obsedian-border bg-white dark:bg-obsidian-canvas">
+    <header className="h-16 shrink-0 flex items-center justify-between px-6 border-b border-slate-200 dark:border-obsidian-border bg-white dark:bg-obsidian-canvas">
       {/* CMD-K Command Searc Mock */}
       <div className="flex items-center gap-3">
         <div className="relative w-64 md:w-80">
@@ -15,7 +15,7 @@ export const TopNavbar: React.FC = () => {
           <input
             type="text"
             placeholder="Search services, incidents.. (⌘K)"
-            className="w-full bg-slate-100 dark:bg-obsidian-card border border-slate-200 dark:border-obsedian-border rounded-lg pl-9 pr-12 py-1.5 text-xs text-slate-700 dark:text-slate-300 cursor-pointer focus:outline-none"
+            className="w-full bg-slate-100 dark:bg-obsidian-card border border-slate-200 dark:border-obsidian-border rounded-lg pl-9 pr-12 py-1.5 text-xs text-slate-700 dark:text-slate-300 cursor-pointer focus:outline-none"
           />
           <kbd className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded border border-slate-300 dark:border-slate-700 bg-slate-200 dark:bg-slate-800 px-1.5 py-0.5 text-[10px] font-mono text-slate-500">
             ⌘K

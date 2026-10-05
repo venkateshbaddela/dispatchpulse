@@ -52,23 +52,31 @@ def probe_single_service(service:Service) -> HealthCheckLog:
     evaluate_alert_rules(service, rule)
     return log
 
-def evaluate_alert_rules(service: Service, rule:AlertRule | None) -> Incident | None:
-    """Evaluates recent telemetry logs against alert rules to trip or recover incidents."""
+def evaluate_alert_rules(service: Service, rule: AlertRule | None) -> Incident | None:
+    """Evaluates recent telemetry logs against alert rules to transition between OPERATIONAL, DEGRADED, and MAJOR_OUTAGE."""
 
     if not rule or not rule.is_active:
         return None
 
-    # Fetch te most recent N logs for this service
+    # Fetch recent logs up to the alert rule failure threshold
+    window_size = max(rule.consecutive_failures, 3)
     recent_logs = list(
-        HealthCheckLog.objects.filter(service=service).order_by("-checked_at")[: rule.consecutive_failures]
+        HealthCheckLog.objects.filter(service=service).order_by("-checked_at")[:window_size]
     )
 
-    # Need at least consecutive_failures logs to make an alert evaluation
-    if len(recent_logs) < rule.consecutive_failures:
+    if not recent_logs:
         return None
 
-    # Check if all recent logs failed (consecutive failure streak)
-    all_failed = all(not log.is_success for log in recent_logs)    
+    latest_log = recent_logs[0]
+    outage_window = recent_logs[: rule.consecutive_failures]
+    has_full_outage_window = len(outage_window) >= rule.consecutive_failures
+
+    # 1. Check for complete blackout streak (e.g. 3 consecutive failures in a row)
+    all_failed = has_full_outage_window and all(not log.is_success for log in outage_window)
+
+    # 2. Check for intermittent drops or high latency (Degraded threshold)
+    any_failed = any(not log.is_success for log in recent_logs)
+    is_high_latency = bool(latest_log.latency_ms and latest_log.latency_ms >= 1000)
 
     # Check if an unresolved incident already exists for this service
     active_incident = Incident.objects.filter(
@@ -76,37 +84,40 @@ def evaluate_alert_rules(service: Service, rule:AlertRule | None) -> Incident | 
         status__in=[Incident.Status.TRIGGERED, Incident.Status.ACKNOWLEDGED],
     ).first()
 
+    # Case A: MAJOR_OUTAGE (Consecutive failures reached the alert threshold)
     if all_failed:
-        # Update service status to outage
         if service.status != Service.ServiceStatus.MAJOR_OUTAGE:
             service.status = Service.ServiceStatus.MAJOR_OUTAGE
             service.save(update_fields=["status"])
 
-    # If no active incident exists, trip a new P1 Incident
+        # If no active incident exists, trip a new P1 Incident
         if not active_incident:
-            last_log = recent_logs[0]
-            new_incident  = Incident.objects.create(
+            new_incident = Incident.objects.create(
                 organization=service.organization,
                 service=service,
                 title=f"Outage detected: {service.name} failing health checks",
                 error_type=Incident.ErrorType.SERVER_CRASH,
                 severity=Incident.Severity.P1,
                 status=Incident.Status.TRIGGERED,
-                raw_logs=last_log.error_message or "Consecutive health checks timed out or returned 5xx.",
+                raw_logs=latest_log.error_message or f"{rule.consecutive_failures} consecutive health checks failed.",
             )
-            # Create the initial audit log
             IncidentLog.objects.create(
                 incident=new_incident,
                 actor=None,
                 event_type=IncidentLog.EventType.TRIGGERED,
-                note=f"Tripped automatically: {rule.consecutive_failures} consecutive failures recorded.", 
+                note=f"Tripped automatically: {rule.consecutive_failures} consecutive failures recorded.",
             )
-
             return new_incident
+
+    # Case B: DEGRADED (Intermittent failure drops OR high latency >= 1000ms)
+    elif any_failed or is_high_latency:
+        if service.status != Service.ServiceStatus.DEGRADED:
+            service.status = Service.ServiceStatus.DEGRADED
+            service.save(update_fields=["status"])
+
+    # Case C: OPERATIONAL (All recent checks succeeded and latency is healthy)
     else:
-        # If the latest check was successful, restore service status if needed
-        latest_log = recent_logs[0]
-        if latest_log.is_success and service.status != Service.ServiceStatus.OPERATIONAL:
+        if service.status != Service.ServiceStatus.OPERATIONAL:
             service.status = Service.ServiceStatus.OPERATIONAL
             service.save(update_fields=["status"])
 

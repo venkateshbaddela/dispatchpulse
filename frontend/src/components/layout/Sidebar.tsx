@@ -15,10 +15,10 @@ export const Sidebar: React.FC = () => {
   ];
 
   return (
-    <aside className="w-64 shrink-0 flex flex-col justify-between border-r border-slate-200 dark:border-obsedian-border bg-white dark:bg-obsidian-sidebar">
+    <aside className="w-64 shrink-0 flex flex-col justify-between border-r border-slate-200 dark:border-obsidian-border bg-white dark:bg-obsidian-sidebar">
       <div>
         {/* Brand & Organization */}
-        <div className="h-16 flex items-center gap-3 px-6 border-b border-slate-200 dark:border-obsedian-border">
+        <div className="h-16 flex items-center gap-3 px-6 border-b border-slate-200 dark:border-obsidian-border">
           <Logo size="md" showText={true} />
           <span className="text-[10px] font-mono text-slate-500 truncate dark:text-slate-400 ml-11 -mt-1">
             {user?.organization?.name || "Workspace"}
@@ -50,7 +50,7 @@ export const Sidebar: React.FC = () => {
         </nav>
       </div>
       {/* User Responder Profile & Sign Out */}
-      <div className="p-4 border-t border-slate-200 dark:border-obsedian-border space-y-3">
+      <div className="p-4 border-t border-slate-200 dark:border-obsidian-border space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5 min-w-0">
             <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-700 dark:text-slate-300">

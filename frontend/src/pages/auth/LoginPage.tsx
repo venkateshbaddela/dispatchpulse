@@ -36,7 +36,7 @@ export const LoginPage: React.FC = () => {
   };
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-slate-50 dark:bg-obsidian-canvas px-4 transition-colors">
-      <div className="w-full max-w-md bg-white dark:bg-obsidian-card border border-slate-200 dark:border-obsedian-border rounded-2xl p-8 shadow-xl">
+      <div className="w-full max-w-md bg-white dark:bg-obsidian-card border border-slate-200 dark:border-obsidian-border rounded-2xl p-8 shadow-xl">
         {/* Brand Header */}
         <div className="flex flex-col items-center text-center mb-8">
           {/* <div className="h-12 w-12 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-600/30 mb-3">
@@ -91,7 +91,7 @@ export const LoginPage: React.FC = () => {
         </form>
 
         {/* Demo Quick-Fill Helpers */}
-        <div className="mt-8 pt-6 border-t border-slate-200 dark:border-obsedian-border">
+        <div className="mt-8 pt-6 border-t border-slate-200 dark:border-obsidian-border">
           <p className="text-[11px] font-mono text-slate-400 text-center uppercase tracking-wider mb-3">
             Quick Fill Demo Accounts
           </p>
@@ -99,7 +99,7 @@ export const LoginPage: React.FC = () => {
             <button
               type="button"
               onClick={() => handleQuickFill("admin@dispatchpulse.local")}
-              className="px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-obsedian-border text-[11px] font-mono text-slate-600 dark:text-slate-400 hover:border-indigo-500/50 hover:text-indigo-400 transition-colors"
+              className="px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-obsidian-border text-[11px] font-mono text-slate-600 dark:text-slate-400 hover:border-indigo-500/50 hover:text-indigo-400 transition-colors"
             >
               Admin Lead
             </button>
@@ -108,7 +108,7 @@ export const LoginPage: React.FC = () => {
               onClick={() =>
                 handleQuickFill("alex.chen@dispatchpulse.local")
               }
-              className="px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-obsedian-border text-[11px] font-mono text-slate-600 dark:text-slate-400 hover:border-indigo-500/50 hover:text-indigo-400 transition-colors"
+              className="px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-obsidian-border text-[11px] font-mono text-slate-600 dark:text-slate-400 hover:border-indigo-500/50 hover:text-indigo-400 transition-colors"
             >
               On-Call SRE (ALEX)
             </button>

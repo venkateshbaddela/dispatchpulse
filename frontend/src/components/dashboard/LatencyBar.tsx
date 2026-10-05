@@ -9,7 +9,7 @@ interface LatencyBarProps {
 export const LatencyBar: React.FC<LatencyBarProps> = ({
   service_status,
   avgLatencyMs = 45,
-  barCount = 3,
+  barCount = 30,
 }) => {
   // Generate deterministic micro-segment health data for the visual bar
   const segments = Array.from({ length: barCount }, (_, index) => {
