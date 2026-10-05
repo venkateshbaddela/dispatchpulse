@@ -10,7 +10,7 @@ from rest_framework.views import APIView
 
 from accounts.models import Organization
 from incidents.models import Incident
-from .engine import probe_single_service
+from .engine import probe_single_service, probe_all_services_concurrently
 from .models import HealthCheckLog, Service
 from .serializers import HealthCheckLogSerializer, ServiceSerializer
 
@@ -36,6 +36,27 @@ class ServiceViewSet(viewsets.ModelViewSet):
         service = self.get_object()
         log = probe_single_service(service)
         return Response(HealthCheckLogSerializer(log).data, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['post'], url_path='ping-all')
+    def ping_all(self, request):
+        """Perform an immediate concurrent health check across all tenant services."""
+
+        org = request.user.organization
+        if not org:
+            return Response(
+                {"detail": "No organization found for current user."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        results = probe_all_services_concurrently(organization=org)
+        return Response(
+            {
+                "total": results["total"],
+                "success": results["success"],
+                "failed": results["failed"],
+            },
+            status=status.HTTP_200_OK
+        )
+
 
 class DashboardKPIView(APIView):
     """Aggregated operational metrics for the top Bento summary row."""

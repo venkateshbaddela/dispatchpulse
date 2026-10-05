@@ -32,7 +32,7 @@ def probe_single_service(service:Service) -> HealthCheckLog:
     except requests.exceptions.RequestException as exc:
         error_message = str(exc)
 
-    latency_ms = int((time.perf_counter() -start_time) * 1000)
+    latency_ms = int((time.perf_counter() - start_time) * 1000)
 
     # Ingest Telemetry log
     log = HealthCheckLog.objects.create(
@@ -112,9 +112,13 @@ def evaluate_alert_rules(service: Service, rule:AlertRule | None) -> Incident | 
 
     return None
 
-def probe_all_services_concurrently(max_workers: int = 10) -> dict:
+def probe_all_services_concurrently(organization=None, max_workers: int = 10) -> dict:
     """Dispatches health checks for all registered services concurrently."""
-    services = list(Service.objects.all())
+    qs = Service.objects.all()
+    if organization is not None:
+        qs = qs.filter(organization=organization)
+
+    services = list(qs)
     if not services:
         return {"total": 0, "success":0, "failed": 0, "logs": []}
 

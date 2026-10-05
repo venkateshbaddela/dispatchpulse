@@ -45,3 +45,21 @@ export interface PublicStatusData {
   status?: ServiceStatus;
   services: PublicStatusServiceItem[];
 }
+
+export interface CreateServicePayload {
+  name: string;
+  target_url: string;
+  check_interval_sec: number;
+}
+
+export interface UpdateServicePayload {
+  name?: string;
+  target_url?: string;
+  check_interval_sec?: number
+}
+
+export interface BatchPingResult {
+  total: number;
+  success: number;
+  failed: number;
+}
