@@ -375,3 +375,22 @@ class OutageSimulatorAPITests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data["incident"]["error_type"], "API_TIMEOUT")
         self.assertIn("HTTP 504", response.data["incident"]["title"])
+
+    def test_triage_deduplicates_repeated_identical_logs(self):
+        incident = Incident.objects.create(
+            organization=self.org,
+            service=self.service,
+            title="Gateway 504 Timeout",
+            error_type=Incident.ErrorType.API_TIMEOUT,
+            severity=Incident.Severity.P2,
+            status=Incident.Status.TRIGGERED,
+            raw_logs="HTTP 504 Gateway Timeout after 10000ms",
+        )
+        # Call triage 3 times in succession
+        self.client.post(f"/api/incidents/{incident.id}/triage/")
+        self.client.post(f"/api/incidents/{incident.id}/triage/")
+        self.client.post(f"/api/incidents/{incident.id}/triage/")
+
+        # Should only have 1 AI_TRIAGE log, not 3
+        triage_logs = incident.logs.filter(event_type=IncidentLog.EventType.AI_TRIAGE)
+        self.assertEqual(triage_logs.count(), 1)

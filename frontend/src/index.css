@@ -29,6 +29,26 @@
   color-scheme: dark;
 }
 
+/* Snappy SRE Workspace Interactions */
+button,
+[role="button"] {
+  cursor: pointer;
+}
+
+button:disabled,
+[role="button"]:disabled {
+  cursor: not-allowed;
+}
+
+/* Fast 75ms hover response across interactive elements */
+button,
+a,
+input,
+select,
+textarea {
+  transition-duration: 75ms !important;
+}
+
 /* Custom SRE Obsidian Scrollbars */
 ::-webkit-scrollbar {
   width: 6px;

@@ -130,12 +130,21 @@ class IncidentViewSet(viewsets.ModelViewSet):
         incident.save(update_fields=['ai_summary'])
 
         confidence_pct = int(diagnosis.get('confidence', 0.0) * 100)
-        IncidentLog.objects.create(
-            incident=incident,
-            actor=request.user,
-            event_type=IncidentLog.EventType.AI_TRIAGE,
-            note=f"AI Triage generated ({confidence_pct}% confidence): {diagnosis.get('root_cause', '')}",
-        )
+        triage_note = f"AI Triage generated ({confidence_pct}% confidence): {diagnosis.get('root_cause', '')}"
+
+        # Deduplicate identical consecutive AI triage logs to prevent timeline spam
+        last_triage_log = incident.logs.filter(event_type=IncidentLog.EventType.AI_TRIAGE).last()
+        if last_triage_log and last_triage_log.note == triage_note:
+            last_triage_log.created_at = timezone.now()
+            last_triage_log.actor = request.user
+            last_triage_log.save(update_fields=['created_at', 'actor'])
+        else:
+            IncidentLog.objects.create(
+                incident=incident,
+                actor=request.user,
+                event_type=IncidentLog.EventType.AI_TRIAGE,
+                note=triage_note,
+            )
 
         return Response(IncidentSerializer(incident).data, status=status.HTTP_200_OK)
 
