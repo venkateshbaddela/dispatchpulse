@@ -41,8 +41,31 @@ export interface Incident {
 export interface AlertRule {
   id: number;
   service: string;
+  service_name?: string;
   consecutive_failures: number;
   timeout_ms: number;
   is_active: boolean;
   created_at: string;
+}
+
+export interface UpdateAlertRulePayload {
+  consecutive_failures?: number;
+  timeout_ms?: number;
+  is_active?: boolean;
+}
+
+export type OutageScenario = 'SERVER_CRASH' | 'DATABASE' | 'API_TIMEOUT' | 'AUTH_SECURITY' | 'PERFORMANCE';
+
+export interface SimulateCrashPayload {
+  service_id: string;
+  scenario?: OutageScenario;
+  custom_logs?: string;
+}
+
+export interface SimulateCrashResponse {
+  message: string;
+  service_id: string;
+  service_name: string;
+  service_status: string;
+  incident: Incident;
 }

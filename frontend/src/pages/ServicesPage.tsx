@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Activity,
+  Bell,
   CheckCircle2,
   Clock,
   Edit2,
@@ -9,12 +10,14 @@ import {
   Plus,
   Radio,
   RefreshCw,
+  Sliders,
   Trash2,
   Zap,
 } from "lucide-react";
 import React, { useState } from "react";
 import { servicesApi } from "../api/services.api";
 import { LatencyBar } from "../components/dashboard/LatencyBar";
+import { AlertRuleModal } from "../components/services/AlertRuleModal";
 import { ServiceModal } from "../components/services/ServiceModal";
 import { Button } from "../components/ui/Button";
 import type { BatchPingResult, Service } from "../types/service";
@@ -25,6 +28,8 @@ export const ServicesPage: React.FC = () => {
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [serviceToEdit, setServiceToEdit] = useState<Service | null>(null);
+  const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
+  const [serviceForAlerts, setServiceForAlerts] = useState<Service | null>(null);
 
   // Per-service pending state
   const [activePingingId, setActivePingingId] = useState<string | null>(null);
@@ -269,7 +274,7 @@ export const ServicesPage: React.FC = () => {
                   </div>
 
                   {/* Latency Telemetry Bar */}
-                  <div className="mb-4">
+                  <div className="mb-3">
                     <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 mb-1.5">
                       <span className="inline-flex items-center gap-1 font-medium">
                         <Zap className="w-3 h-3 text-indigo-500" />
@@ -285,6 +290,25 @@ export const ServicesPage: React.FC = () => {
                       service_status={service.status}
                       avgLatencyMs={service.latest_check?.latency_ms ?? 45}
                     />
+                  </div>
+
+                  {/* Alert Threshold Info Chip */}
+                  <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 mb-4 px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-obsidian-canvas border border-slate-100 dark:border-obsidian-border">
+                    <div className="flex items-center gap-1.5 font-medium">
+                      <Bell className="w-3 h-3 text-amber-500" />
+                      <span>Alert Rule</span>
+                    </div>
+                    {service.alert_rule ? (
+                      <span className="font-mono text-[11px] font-semibold text-slate-700 dark:text-slate-300">
+                        {service.alert_rule.is_active ? (
+                          `${service.alert_rule.consecutive_failures} fails • ${(service.alert_rule.timeout_ms / 1000).toFixed(0)}s`
+                        ) : (
+                          <span className="text-slate-400 dark:text-slate-500 italic">Disabled</span>
+                        )}
+                      </span>
+                    ) : (
+                      <span className="text-slate-400 dark:text-slate-500">Default (3 fails • 5s)</span>
+                    )}
                   </div>
                 </div>
 
@@ -303,6 +327,19 @@ export const ServicesPage: React.FC = () => {
                   </button>
 
                   <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setServiceForAlerts(service);
+                        setIsAlertModalOpen(true);
+                      }}
+                      disabled={isDeleting}
+                      title="Tune Alert Rules"
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-amber-500 dark:hover:text-amber-400 hover:bg-slate-100 dark:hover:bg-obsidian-hover transition-colors cursor-pointer"
+                    >
+                      <Sliders className="w-3.5 h-3.5" />
+                    </button>
+
                     <button
                       type="button"
                       onClick={() => handleOpenEditModal(service)}
@@ -338,6 +375,16 @@ export const ServicesPage: React.FC = () => {
           setServiceToEdit(null);
         }}
         serviceToEdit={serviceToEdit}
+      />
+
+      {/* Alert Rule Configuration Modal */}
+      <AlertRuleModal
+        isOpen={isAlertModalOpen}
+        onClose={() => {
+          setIsAlertModalOpen(false);
+          setServiceForAlerts(null);
+        }}
+        service={serviceForAlerts}
       />
     </div>
   );

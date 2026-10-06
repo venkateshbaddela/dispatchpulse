@@ -10,7 +10,7 @@ from rest_framework.throttling import AnonRateThrottle
 from rest_framework.views import APIView
 
 from accounts.models import Organization
-from incidents.models import Incident
+from incidents.models import AlertRule, Incident
 from .engine import probe_single_service, probe_all_services_concurrently, probe_ephemeral_url
 from .models import HealthCheckLog, Service
 from .serializers import HealthCheckLogSerializer, ServiceSerializer
@@ -29,7 +29,11 @@ class ServiceViewSet(viewsets.ModelViewSet):
         ).order_by('-created_at')
 
     def perform_create(self, serializer):
-        serializer.save(organization=self.request.user.organization)
+        service = serializer.save(organization=self.request.user.organization)
+        AlertRule.objects.get_or_create(
+            service=service,
+            defaults={"consecutive_failures": 3, "timeout_ms": 5000, "is_active": True},
+        )
 
     @action(detail=True, methods=['post'], url_path='ping')
     def ping(self, request, pk=None):

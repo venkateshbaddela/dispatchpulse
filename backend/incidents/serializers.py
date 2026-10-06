@@ -19,11 +19,14 @@ class IncidentLogSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 class AlertRuleSerializer(serializers.ModelSerializer):
+    service_name = serializers.CharField(source='service.name', read_only=True)
+
     class Meta:
         model = AlertRule
         fields = [
             'id',
             'service',
+            'service_name',
             'consecutive_failures',
             'timeout_ms',
             'is_active',

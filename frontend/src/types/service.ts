@@ -10,6 +10,13 @@ export interface HealthCheckLog {
   checked_at: string;
 }
 
+export interface ServiceAlertRuleInfo {
+  id: number;
+  consecutive_failures: number;
+  timeout_ms: number;
+  is_active: boolean;
+}
+
 export interface Service {
   id: string;
   organization: string;
@@ -20,6 +27,7 @@ export interface Service {
   last_checked_at: string | null;
   created_at: string;
   latest_check?: HealthCheckLog | null;
+  alert_rule?: ServiceAlertRuleInfo | null;
 }
 
 export interface KPISummary {

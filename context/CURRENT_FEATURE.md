@@ -1,56 +1,51 @@
-# Current Feature: F14 — Public Instant Website Availability Checker ("Is It Down Right Now?" `/is-it-down`)
+# Current Feature: F15 — Alert Rules Configuration UI & Outage Simulator
 
 ## Status: COMPLETED
 
 ### Completed Objectives
-- [x] **Backend SSRF Protection Engine (`backend/monitoring/ssrf.py`):**
-  - Robust URL parsing and scheme restriction (strictly enforces `http` and `https`, rejects `file`, `ftp`, `gopher`, `data`, etc.).
-  - DNS resolution using `socket.getaddrinfo` with IPv4/IPv6 support.
-  - Comprehensive IP boundary validation: blocks private RFC 1918 subnets (`10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`), loopback (`127.0.0.1`), link-local/cloud metadata (`169.254.169.254`), reserved, and multicast ranges.
-- [x] **Ephemeral Availability Probe Engine (`backend/monitoring/engine.py`):**
-  - Added `probe_ephemeral_url(target_url, timeout_seconds=5.0)`.
-  - Ephemeral memory-only execution that does not pollute the `HealthCheckLog` database table.
-  - High-precision latency calculation using `time.perf_counter()`.
-  - Custom `DispatchPulse-Probe/1.0` User-Agent header with redirect following and status categorization (2xx/3xx/4xx vs 5xx / timeouts).
-- [x] **Unauthenticated Public Endpoint & Rate Limiting (`backend/monitoring/views.py` & `backend/config/urls.py`):**
-  - Added `PublicProbeThrottle(AnonRateThrottle)` enforcing a burst limit of 20 requests/minute per client IP.
-  - Implemented `PublicProbeView` (`POST /api/public/probe/`) with `permission_classes = [AllowAny]`.
-  - Enforced strict trailing slash convention (`/api/public/probe/`).
-  - Implemented 9 unit tests in `backend/monitoring/tests.py` covering valid HTTP probe, private IP rejection, loopback rejection, AWS metadata rejection, invalid scheme rejection, and API view behavior.
-- [x] **Frontend API Client & Typing (`frontend/src/types/service.ts` & `frontend/src/api/services.api.ts`):**
-  - Defined `PublicProbeResult` TypeScript interface (`target_url`, `is_up`, `status_code`, `latency_ms`, `resolved_ip`, `checked_at`, `error`).
-  - Added `servicesApi.probePublicUrl(url)` calling `POST /public/probe/`.
-- [x] **Public Availability Checker UI (`frontend/src/pages/PublicProbePage.tsx`):**
-  - Responsive Obsidian SRE design system layout adhering to solid borders (`border-slate-200 dark:border-obsidian-border`).
-  - Quick-preset chips for testing popular services (GitHub, Cloudflare, Google, Netflix, AWS).
-  - Diagnostic metrics grid:
-    - Availability status banner (Operational vs Unreachable / Degraded).
-    - Status code pill with HTTP semantics explanation.
-    - Latency gauge with color-graded millisecond response time.
-    - Resolved IP card showing public destination IP.
-    - SSRF security notice explaining protected perimeter boundaries.
-  - Conversion / Growth CTA card linking visitors to DispatchPulse 24/7 automated alerting.
-- [x] **Navigation & Route Registration (`frontend/src/App.tsx` & `frontend/src/components/layout/Sidebar.tsx`):**
-  - Added `/is-it-down` public route in `App.tsx`.
-  - Added "Is It Down?" nav item with Globe icon in `Sidebar.tsx`.
+- [x] **Backend Alert Rules Enhancements (`backend/incidents/serializers.py`, `backend/incidents/views.py`, `backend/monitoring/serializers.py`, `backend/monitoring/views.py`):**
+  - Added `service_name` read-only field to `AlertRuleSerializer`.
+  - Added multi-tenant service filtering (`?service=<service_id>`) in `AlertRuleViewset.get_queryset()`.
+  - Enforced tenant security in `AlertRuleViewset.perform_create` and `perform_update` (ensures rules can only be configured for services belonging to the user's organization).
+  - Embedded `alert_rule` in `ServiceSerializer` (`consecutive_failures`, `timeout_ms`, `is_active`) to deliver service health and threshold configs in a single query.
+  - Configured `ServiceViewSet.perform_create` to auto-provision baseline alert rules (`consecutive_failures=3`, `timeout_ms=5000`, `is_active=True`) on service registration.
+- [x] **Chaos & Outage Simulator Backend (`backend/incidents/views.py` & `backend/config/urls.py`):**
+  - Created `OutageSimulatorView` (`POST /api/simulator/crash/`) supporting multiple realistic chaos presets:
+    - `SERVER_CRASH`: 500 Unhandled runtime panic (SIGSEGV / OOM memory limit).
+    - `DATABASE`: PostgreSQL connection pool exhaustion (`FATAL: remaining connection slots reserved`).
+    - `API_TIMEOUT`: 504 Gateway Timeout (upstream reverse-proxy timeout > 10,000ms).
+    - `AUTH_SECURITY`: 401 JWT Signature Mismatch (rotated JWKS public key rejection).
+    - `PERFORMANCE`: P99 Latency Surge (> 4850ms latency with heavy I/O wait).
+  - Ingests failure `HealthCheckLog` telemetry, updates `service.status` to `MAJOR_OUTAGE`, creates a `TRIGGERED` P1 `Incident` with realistic stack traces, and logs an `IncidentLog` entry.
+- [x] **Backend Automated Unit Tests (`backend/incidents/tests.py`):**
+  - Added 9 new unit tests (24/24 tests passing across `monitoring` and `incidents`):
+    - `test_list_and_filter_alert_rules`
+    - `test_patch_alert_rule`
+    - `test_tenant_cannot_modify_other_org_rule`
+    - `test_service_creation_auto_provisions_default_alert_rule`
+    - `test_simulate_crash_requires_service_id`
+    - `test_simulate_crash_cross_tenant_forbidden`
+    - `test_simulate_server_crash_success`
+    - `test_simulate_database_pool_exhaustion`
+    - `test_simulate_gateway_timeout`
+- [x] **Frontend API Client & Type Definitions (`frontend/src/types/`, `frontend/src/api/`):**
+  - Extended `Service` interface with `ServiceAlertRuleInfo` in `frontend/src/types/service.ts`.
+  - Added `UpdateAlertRulePayload`, `OutageScenario`, `SimulateCrashPayload`, and `SimulateCrashResponse` in `frontend/src/types/incident.ts`.
+  - Added `incidentsApi.getAlertRules`, `incidentsApi.updateAlertRule`, and `incidentsApi.simulateCrash` in `frontend/src/api/incidents.api.ts`.
+- [x] **Alert Rules Tuning UI (`frontend/src/components/services/AlertRuleModal.tsx` & `frontend/src/pages/ServicesPage.tsx`):**
+  - Modal with sliders and quick-presets for `consecutive_failures` (1 to 20) and `timeout_ms` (500ms to 60,000ms).
+  - Automated alerting toggle switch (`is_active`) with safety warning banner when disabled.
+  - Service card displays threshold chip (`⚡ Alert Rule: 3 fails • 5s`) and "Tune Alert Rules" sliders button.
+- [x] **Outage Simulator UI (`frontend/src/components/dashboard/OutageSimulatorModal.tsx` & `frontend/src/pages/Dashboard.tsx`):**
+  - Target service dropdown selector with real-time status.
+  - Interactive scenario preset cards (`500 Server Crash`, `DB Pool Exhaustion`, `504 Gateway Timeout`, `401 Auth Mismatch`, `P99 Latency Surge`).
+  - Expandable custom stack trace / raw log editor.
+  - Prominent "Simulate Outage" header button on Dashboard.
+  - Post-injection banner with direct CTA to open the newly spawned incident and trigger AI Triage.
 
 ### Verification Gates Passed
 - [x] `npm run lint` passes with 0 errors / 0 warnings (`eslint .`).
 - [x] `npx tsc -b` compiles cleanly with 0 type errors.
 - [x] `npm run build` succeeds generating optimized production bundles.
 - [x] Django system checks pass with 0 issues (`python manage.py check`).
-- [x] Django unit tests pass with 15/15 tests OK (`python manage.py test monitoring incidents`).
-- [x] Live end-to-end `curl` verification against running dev server:
-  - `https://example.com` -> 200 OK, latency 238ms, resolved IP.
-  - `http://127.0.0.1:8000` -> 400 Bad Request, SSRF loopback security warning.
-  - `http://169.254.169.254/...` -> 400 Bad Request, cloud metadata security warning.
-  - `http://192.168.1.1` -> 400 Bad Request, private IP security warning.
-  - `file:///etc/passwd` -> 400 Bad Request, unsupported scheme warning.
-
----
-
-### Transition Gate & Remaining Roadmap Backlog
-
-- **Immediate Next Feature:** **F15 — Alert Rules Configuration UI & Outage Simulator**
-  - Alert rule thresholds customization (`consecutive_failures`, `timeout_ms`).
-  - Dashboard "Simulate Crash / Webhook" trigger to verify alert transitions and AI triage pipeline.
+- [x] Django unit tests pass with 24/24 tests OK (`python manage.py test`).

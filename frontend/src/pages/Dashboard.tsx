@@ -1,22 +1,25 @@
-import React from "react";
+import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { servicesApi } from "../api/services.api";
 import { incidentsApi } from "../api/incidents.api";
 import { KPICards } from "../components/dashboard/KPICards";
 import { ServicesList } from "../components/dashboard/ServicesList";
-import { Activity, ShieldAlert } from "lucide-react";
+import { Activity, Flame, ShieldAlert } from "lucide-react";
 import { IncidentQueueTable } from "../components/dashboard/IncidentQueueTable";
+import { OutageSimulatorModal } from "../components/dashboard/OutageSimulatorModal";
 
 export const Dashboard: React.FC = () => {
-//  Fetch Top Bento KPI Summary (30s background polling())
-const {data: kpis, isLoading:kpisLoading} = useQuery({
-  queryKey: ['dashboard-kpis'],
-  queryFn: servicesApi.getDashboardKpis,
-  refetchInterval: 30000,
-})
+  const [isSimulatorOpen, setIsSimulatorOpen] = useState(false);
 
-// 2. Fetch Monitored Target Services (30s background polling)
-const { data: services = [], isLoading: servicesLoading } = useQuery({
+  // 1. Fetch Top Bento KPI Summary (30s background polling)
+  const { data: kpis, isLoading: kpisLoading } = useQuery({
+    queryKey: ['dashboard-kpis'],
+    queryFn: servicesApi.getDashboardKpis,
+    refetchInterval: 30000,
+  });
+
+  // 2. Fetch Monitored Target Services (30s background polling)
+  const { data: services = [], isLoading: servicesLoading } = useQuery({
     queryKey: ['services'],
     queryFn: servicesApi.getServices,
     refetchInterval: 30000,
@@ -31,7 +34,7 @@ const { data: services = [], isLoading: servicesLoading } = useQuery({
 
   return (
     <div className="space-y-8 p-6 max-w-7xl mx-auto">
-     {/* Page Header */}
+      {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
@@ -40,6 +43,18 @@ const { data: services = [], isLoading: servicesLoading } = useQuery({
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
             Real-time telemetry, service health checks, and active incident response.
           </p>
+        </div>
+
+        {/* Header Actions */}
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setIsSimulatorOpen(true)}
+            className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/20 transition-colors cursor-pointer shadow-xs"
+          >
+            <Flame className="w-3.5 h-3.5" />
+            <span>Simulate Outage</span>
+          </button>
         </div>
       </div>
 
@@ -84,6 +99,13 @@ const { data: services = [], isLoading: servicesLoading } = useQuery({
           isLoading={incidentsLoading}
         />
       </section>
+
+      {/* Chaos & Outage Simulator Modal */}
+      <OutageSimulatorModal
+        isOpen={isSimulatorOpen}
+        onClose={() => setIsSimulatorOpen(false)}
+        services={services}
+      />
     </div>
   );
 };

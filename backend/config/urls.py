@@ -11,7 +11,7 @@ from accounts.views import (
     UserViewSet,
 )
 
-from incidents.views import AlertRuleViewset, IncidentViewSet
+from incidents.views import AlertRuleViewset, IncidentViewSet, OutageSimulatorView
 from monitoring.views import DashboardKPIView, PublicProbeView, PublicStatusView, ServiceViewSet
 
 router = DefaultRouter()
@@ -31,6 +31,7 @@ urlpatterns = [
     path('api/dashboard/kpis/', DashboardKPIView.as_view(), name='dashboard-kpis'),
     path('api/status/<slug:slug>/', PublicStatusView.as_view(), name='public-status'),
     path('api/public/probe/', PublicProbeView.as_view(), name='public-probe'),
+    path('api/simulator/crash/', OutageSimulatorView.as_view(), name='simulator-crash'),
     # ViewsSet Router URLs
     path('api/', include(router.urls)),
 ]

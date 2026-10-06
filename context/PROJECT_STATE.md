@@ -39,7 +39,7 @@
 | **F12** | Services Management & Interactive Operations (`/services` grid, target CRUD modal, "Ping All Now" batch probe) | **Completed** | `main` (`8aa550f`, `d39c3b4`) |
 | **F13** | Dedicated Incident Archive & Queue Center (`/incidents` full filterable table by severity/status/service, search & pagination) | **Completed** | `main` (`4ad10e9`) |
 | **F14** | Public Instant Website Availability Checker ("Is It Down Right Now?" `/is-it-down`, `POST /api/public/probe/` with SSRF protection & rate limiting) | **Completed** | `feat/f14-public-site-checker` |
-| **F15** | Alert Rules Configuration UI & Outage Simulator ("Simulate Crash / Webhook" trigger, dynamic threshold tuning) | **Upcoming** | `feat/f15-alert-rules-simulator` |
+| **F15** | Alert Rules Configuration UI & Outage Simulator ("Simulate Crash / Webhook" trigger, dynamic threshold tuning) | **Completed** | `feat/f15-alert-rules-simulator` |
 
 ---
 

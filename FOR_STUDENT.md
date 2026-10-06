@@ -92,3 +92,14 @@ For Student:
   
     Please introduce Feature F13, create the branch, and guide me through Step 1 (Backend       
   QuerySet enhancements). Show me the code snippet so I can type it into Codespaces. 
+
+
+  4.
+    Hi! I'm ready to start Feature F15: Alert Rules Configuration UI & Outage Simulator.
+  
+    Our repository is clean, on branch `main`, and fully pushed to GitHub with Feature F14 completed.
+  
+    Let's work on F15:
+    1. Create and switch to branch `feat/f15-alert-rules-simulator`.
+    2. Give me a clear step-by-step architectural breakdown of what we are building for F15 (Alert Rules UI & Chaos / Outage Simulator) before writing code.
+    3. Show me the code and explain how each part works as we develop it.

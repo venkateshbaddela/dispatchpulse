@@ -3,8 +3,8 @@ from rest_framework.test import APITestCase
 from rest_framework.authtoken.models import Token
 from rest_framework import status
 from accounts.models import Organization, User
-from monitoring.models import Service
-from incidents.models import Incident
+from monitoring.models import Service, HealthCheckLog
+from incidents.models import Incident, AlertRule, IncidentLog
 
 
 class IncidentFilterAndSearchTests(APITestCase):
@@ -189,3 +189,189 @@ class IncidentFilterAndSearchTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]["id"], str(self.inc_org_b.id))
+
+
+class AlertRuleAPITests(APITestCase):
+    def setUp(self):
+        self.org_a = Organization.objects.create(name="Acme Corp", slug="acme-corp", api_key="acme-key-1")
+        self.user_a = User.objects.create_user(
+            email="sre@acme.com",
+            username="sre@acme.com",
+            password="secretpassword123",
+            organization=self.org_a,
+        )
+        self.token_a = Token.objects.create(user=self.user_a)
+        self.client.credentials(HTTP_AUTHORIZATION=f"Token {self.token_a.key}")
+
+        self.org_b = Organization.objects.create(name="Beta LLC", slug="beta-llc", api_key="beta-key-2")
+        self.user_b = User.objects.create_user(
+            email="dev@beta.com",
+            username="dev@beta.com",
+            password="secretpassword123",
+            organization=self.org_b,
+        )
+
+        self.service_a = Service.objects.create(
+            organization=self.org_a,
+            name="Auth Service",
+            target_url="https://auth.acme.com/health",
+        )
+        self.rule_a = AlertRule.objects.create(
+            service=self.service_a,
+            consecutive_failures=3,
+            timeout_ms=5000,
+            is_active=True,
+        )
+
+        self.service_b = Service.objects.create(
+            organization=self.org_b,
+            name="Secret Service B",
+            target_url="https://secret.beta.com/health",
+        )
+        self.rule_b = AlertRule.objects.create(
+            service=self.service_b,
+            consecutive_failures=5,
+            timeout_ms=3000,
+            is_active=True,
+        )
+
+    def test_list_and_filter_alert_rules(self):
+        # List rules - should only return Org A's rule
+        response = self.client.get("/api/alert-rules/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]["id"], self.rule_a.id)
+        self.assertEqual(response.data[0]["service_name"], "Auth Service")
+
+        # Filter by service ID
+        response = self.client.get(f"/api/alert-rules/?service={self.service_a.id}")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+
+    def test_patch_alert_rule(self):
+        response = self.client.patch(
+            f"/api/alert-rules/{self.rule_a.id}/",
+            {"consecutive_failures": 5, "timeout_ms": 10000, "is_active": False},
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.rule_a.refresh_from_db()
+        self.assertEqual(self.rule_a.consecutive_failures, 5)
+        self.assertEqual(self.rule_a.timeout_ms, 10000)
+        self.assertFalse(self.rule_a.is_active)
+
+    def test_tenant_cannot_modify_other_org_rule(self):
+        # Attempt to patch rule_b belonging to Org B
+        response = self.client.patch(
+            f"/api/alert-rules/{self.rule_b.id}/",
+            {"consecutive_failures": 2},
+        )
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_service_creation_auto_provisions_default_alert_rule(self):
+        response = self.client.post(
+            "/api/services/",
+            {"name": "Billing API", "target_url": "https://billing.acme.com/health", "check_interval_sec": 30},
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        new_service_id = response.data["id"]
+        # Verify alert_rule embedded in response
+        self.assertIsNotNone(response.data.get("alert_rule"))
+        self.assertEqual(response.data["alert_rule"]["consecutive_failures"], 3)
+        self.assertEqual(response.data["alert_rule"]["timeout_ms"], 5000)
+        self.assertTrue(response.data["alert_rule"]["is_active"])
+
+        # Verify AlertRule exists in database
+        rule = AlertRule.objects.filter(service_id=new_service_id).first()
+        self.assertIsNotNone(rule)
+        self.assertEqual(rule.consecutive_failures, 3)
+
+
+class OutageSimulatorAPITests(APITestCase):
+    def setUp(self):
+        self.org = Organization.objects.create(name="Acme Corp", slug="acme-corp", api_key="acme-sim-key")
+        self.user = User.objects.create_user(
+            email="sre@acme.com",
+            username="sre@acme.com",
+            password="secretpassword123",
+            organization=self.org,
+        )
+        self.token = Token.objects.create(user=self.user)
+        self.client.credentials(HTTP_AUTHORIZATION=f"Token {self.token.key}")
+
+        self.service = Service.objects.create(
+            organization=self.org,
+            name="Payment Gateway",
+            target_url="https://payment.acme.com/health",
+            status=Service.ServiceStatus.OPERATIONAL,
+        )
+
+        # Other org
+        self.other_org = Organization.objects.create(name="Other Corp", slug="other-corp", api_key="other-key")
+        self.other_service = Service.objects.create(
+            organization=self.other_org,
+            name="Rival Service",
+            target_url="https://rival.com/health",
+        )
+
+    def test_simulate_crash_requires_service_id(self):
+        response = self.client.post("/api/simulator/crash/", {})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("service_id", response.data)
+
+    def test_simulate_crash_cross_tenant_forbidden(self):
+        response = self.client.post("/api/simulator/crash/", {"service_id": str(self.other_service.id)})
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_simulate_server_crash_success(self):
+        response = self.client.post(
+            "/api/simulator/crash/",
+            {"service_id": str(self.service.id), "scenario": "SERVER_CRASH"},
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        data = response.data
+        self.assertEqual(data["service_name"], "Payment Gateway")
+        self.assertEqual(data["service_status"], "MAJOR_OUTAGE")
+
+        # Verify service status was updated in DB
+        self.service.refresh_from_db()
+        self.assertEqual(self.service.status, Service.ServiceStatus.MAJOR_OUTAGE)
+
+        # Verify failing HealthCheckLog was created
+        log = HealthCheckLog.objects.filter(service=self.service).first()
+        self.assertIsNotNone(log)
+        self.assertFalse(log.is_success)
+        self.assertEqual(log.status_code, 500)
+
+        # Verify P1 Incident created
+        incident_data = data["incident"]
+        self.assertEqual(incident_data["severity"], "P1")
+        self.assertEqual(incident_data["status"], "TRIGGERED")
+        self.assertEqual(incident_data["error_type"], "SERVER_CRASH")
+        self.assertIn("Unhandled runtime panic", incident_data["title"])
+        self.assertIn("SIGSEGV", incident_data["raw_logs"])
+
+        # Verify IncidentLog created
+        inc_obj = Incident.objects.get(id=incident_data["id"])
+        inc_log = inc_obj.logs.first()
+        self.assertIsNotNone(inc_log)
+        self.assertEqual(inc_log.actor, self.user)
+        self.assertIn("Outage Simulator", inc_log.note)
+
+    def test_simulate_database_pool_exhaustion(self):
+        response = self.client.post(
+            "/api/simulator/crash/",
+            {"service_id": str(self.service.id), "scenario": "DATABASE"},
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data["incident"]["error_type"], "DATABASE")
+        self.assertIn("Database connection pool exhausted", response.data["incident"]["title"])
+        self.assertIn("FATAL: remaining connection slots", response.data["incident"]["raw_logs"])
+
+    def test_simulate_gateway_timeout(self):
+        response = self.client.post(
+            "/api/simulator/crash/",
+            {"service_id": str(self.service.id), "scenario": "API_TIMEOUT"},
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data["incident"]["error_type"], "API_TIMEOUT")
+        self.assertIn("HTTP 504", response.data["incident"]["title"])
