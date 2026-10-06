@@ -40,6 +40,7 @@
 | **F13** | Dedicated Incident Archive & Queue Center (`/incidents` full filterable table by severity/status/service, search & pagination) | **Completed** | `main` (`4ad10e9`) |
 | **F14** | Public Instant Website Availability Checker ("Is It Down Right Now?" `/is-it-down`, `POST /api/public/probe/` with SSRF protection & rate limiting) | **Completed** | `feat/f14-public-site-checker` |
 | **F15** | Alert Rules Configuration UI & Outage Simulator ("Simulate Crash / Webhook" trigger, dynamic threshold tuning) | **Completed** | `feat/f15-alert-rules-simulator` |
+| **F16** | Team & On-Call Directory and Incident Assignment Delegation (`/team`, role management, shift toggle, assignee selector) | **Completed** | `main` |
 
 ---
 

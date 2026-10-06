@@ -41,6 +41,11 @@ export const incidentsApi = {
     return response.data;
   },
 
+  assignIncident: async (incidentId: string, assignToId: number | null): Promise<Incident> => {
+    const response = await apiClient.post<Incident>(`/incidents/${incidentId}/assign/`, {assigned_to: assignToId,})
+    return response.data
+  },
+
   getAlertRules: async (serviceId?: string): Promise<AlertRule[]> => {
     const params = serviceId ? { service: serviceId } : undefined;
     const response = await apiClient.get<AlertRule[]>('/alert-rules/', { params });

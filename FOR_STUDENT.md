@@ -103,3 +103,129 @@ For Student:
     1. Create and switch to branch `feat/f15-alert-rules-simulator`.
     2. Give me a clear step-by-step architectural breakdown of what we are building for F15 (Alert Rules UI & Chaos / Outage Simulator) before writing code.
     3. Show me the code and explain how each part works as we develop it.
+
+
+    today:
+
+        I'm back from my break! Let's build Feature F16: Team & On-Call Directory and Incident       
+  Assignment Delegation.
+  
+    I want to build this in a tutor-student style where I write and drive the code:
+    1. Break down the implementation into clear, incremental steps.
+    2. In each step, explain the concepts, tell me which file to open, and give me the exact code
+  snippets or changes to apply.
+    3. Help me test and verify each part before moving on to the next.
+  
+    Let's start with Step 1! What are we building first?
+
+
+    blueprint:
+    Here is the complete blueprint and visual design preview for the Sidebar Profile Aesthetic     
+  Upgrade, the Team & On-Call Page, and the Incident Assignment Workflow before we start writing 
+  code.                                                                                          
+  ──────                                                                                         
+  ### 1. Sidebar Bottom User Profile (Aesthetic Upgrade)                                         
+                                                                                                 
+  #### The Problem Right Now                                                                     
+                                                                                                 
+  • Line 64 in Sidebar.tsx:64 has unstyled text (text-slate-900 dark:text-slate-200) without a   
+  font size, making the email and role blend together awkwardly with zero visual hierarchy.      
+  • The avatar is a plain gray square circle with no depth.                                      
+  • Squeezed layout between the text and the On-Call badge.                                      
+                                                                                                 
+  #### The New Sleek Design (Linear / Vercel style)                                              
+                                                                                                 
+    ┌────────────────────────────────────────────────────────┐                                   
+    │ ┌────┐  alex.sre@acme.com                              │                                   
+    │ │ A  │  ● On-Call  •  Admin                            │                                   
+    │ └────┘                                                 │                                   
+    │ [ 🚪 Sign Out                                        ] │                                   
+    └────────────────────────────────────────────────────────┘                                   
+                                                                                                 
+  • Avatar: Soft gradient accent container (bg-gradient-to-tr from-indigo-500 to-cyan-500 text-  
+  white font-semibold shadow-xs) with a clean status dot indicator.                              
+  • Top Line: text-xs font-semibold text-slate-800 dark:text-slate-100 truncate (email or first  
+  name).                                                                                         
+  • Subtitle Line: Micro-chip hierarchy (text-[11px] text-slate-400 dark:text-slate-500):        
+      • Shows role pill: Admin / Responder / Viewer.                                             
+      • If is_on_call = true: Displays a live glowing emerald indicator (🟢 On-Call).            
+  • Sign Out Button: Polished ghost button with smooth hover state (hover:bg-rose-500/10         
+  hover:text-rose-500 transition-all duration-75).                                               
+  ──────                                                                                         
+  ### 2. New Team & On-Call Page (/team)                                                         
+                                                                                                 
+  We will add a dedicated "Team & On-Call" tab to the navigation sidebar:                        
+                                                                                                 
+    ┌────────────────────────────────────────────────────────────────────────────────────────┐   
+    │ Team & Responders                                             [ + Add Team Member ]    │   
+    │ Manage organization members, roles, and live on-call duty rotations.                   │   
+    ├────────────────────────────────────────────────────────────────────────────────────────┤   
+    │  ┌──────────────────────┐  ┌──────────────────────┐  ┌──────────────────────┐          │   
+    │  │ 👥 Total Members     │  │ 🟢 Active On-Call    │  │ 🚨 Active Responders │          │   
+    │  │ 5 Engineers          │  │ 2 on duty            │  │ 1 handling P1s       │          │   
+    │  └──────────────────────┘  └──────────────────────┘  └──────────────────────┘          │   
+    ├────────────────────────────────────────────────────────────────────────────────────────┤   
+    │  MEMBER               ROLE        ON-CALL SHIFT      ACTIVE LOAD         ACTIONS       │   
+    │                                                                                        │   
+    │  👤 Alex Rivera       [ ADMIN ]   🟢 On-Duty         1 Active (P1)      [ Off-Duty ]   │   
+    │     alex@acme.com                                                       [ Role ▾ ]     │   
+    │                                                                                        │   
+    │  👤 Sarah Chen        [ RESP ]    ⚪ Off-Duty        0 Active           [ Go On-Call ] │   
+    │     sarah@acme.com                                                      [ Role ▾ ]     │   
+    │                                                                                        │   
+    │  👤 Marcus Vance      [ VIEWER ]  ⚪ Off-Duty        0 Active           [ Role ▾ ]     │   
+    │     marcus@acme.com                                                                    │   
+    └────────────────────────────────────────────────────────────────────────────────────────┘   
+                                                                                                 
+  #### Key Capabilities:                                                                         
+                                                                                                 
+  1. Live On-Call Toggle: Responders can switch their shift with one click (Go On-Call ↔ Off-    
+  Duty).                                                                                         
+  2. Role Management: Admins can change a member's role (ADMIN, RESPONDER, VIEWER).              
+  3. Active Workload Tracking: Displays how many open P1/P2/P3 incidents each responder is       
+  currently handling.                                                                            
+  4. Invite Modal (Admins only): Add new teammates to the tenant organization (Email, Role,      
+  Password).                                                                                     
+  ──────                                                                                         
+  ### 3. Incident Details Assignment Dropdown (/incidents/:id)                                   
+                                                                                                 
+  In IncidentDetailsPage.tsx, the static text "Assigned To: Unassigned" in the Incident Context  
+  card will become an interactive Responder Selector:                                            
+                                                                                                 
+    ┌──────────────────────────────────────────────────────────┐                                 
+    │  Incident Context                                        │                                 
+    │  Service:          Authentication Service                │                                 
+    │  Error Type:       SERVER_CRASH                          │                                 
+    │                                                          │                                 
+    │  Assigned To:      [ 🟢 Sarah Chen (On-Call)  ▾ ]        │                                 
+    │                    └─ ⚪ Unassigned                      │                                 
+    │                    └─ 🟢 Sarah Chen (On-Call)            │                                 
+    │                    └─ 🟢 Alex Rivera (On-Call - You)     │                                 
+    │                    └─ ⚪ Marcus Vance                    │                                 
+    │                                                          │                                 
+    │  Created At:       Today at 2:15 PM                      │                                 
+    └──────────────────────────────────────────────────────────┘                                 
+                                                                                                 
+  • On-Call Priority: Engineers who are currently on-call are sorted at the top with a 🟢 On-Call
+  badge.                                                                                         
+  • 1-Click "Claim" Button: If an incident is unassigned, a quick button allows the logged-in    
+  engineer to claim it immediately.                                                              
+  • Audit Trail: Every assignment, reassignment, or unassignment automatically logs to the       
+  incident timeline:                                                                             
+  │ "Incident assigned to sarah@acme.com by alex@acme.com."                                      
+                                                                                                 
+  ──────                                                                                         
+  ### 4. Implementation Steps & Files                                                            
+                                                                                                 
+   Step │ Scope                      │ Files Touched / Created
+  ──────┼────────────────────────────┼───────────────────────────────────────────────────────────
+   1    │ Sidebar Redesign           │ Sidebar.tsx
+   2    │ Backend APIs               │ views.py (Add assign action)views.py (Add toggle-on-call,
+        │                            │ perform_create, update)serializers.py (Add
+        │                            │ active_incidents_count)
+   3    │ Frontend API               │ auth.api.ts, incidents.api.ts
+   4    │ Team Page                  │ Create TeamPage.tsx, add route in App.tsx
+   5    │ Incident Assignee Selector │ IncidentDetailsPage.tsx
+   6    │ Automated Tests            │ tests.py
+  ──────                                                                                         
+  Please let me know if you are satisfied with this plan, and I will proceed with building it!   

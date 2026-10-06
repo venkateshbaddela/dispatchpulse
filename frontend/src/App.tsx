@@ -10,6 +10,7 @@ import { Dashboard } from "./pages/Dashboard";
 import { ServicesPage } from "./pages/ServicesPage";
 import { IncidentDetailPage } from "./pages/IncidentDetailsPage";
 import { IncidentsPage } from "./pages/IncidentsPage";
+import { TeamPage } from "./pages/TeamPage";
 import { PublicStatusPage } from "./pages/PublicStatusPage";
 import { PublicProbePage } from "./pages/PublicProbePage";
 
@@ -46,6 +47,7 @@ export default function App() {
                     path="/incidents/:id"
                     element={<IncidentDetailPage />}
                   />
+                  <Route path="/team" element={<TeamPage />} />
                 </Route>
               </Route>
 

@@ -7,6 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from accounts.models import User
 from monitoring.models import Service, HealthCheckLog
 from .models import AlertRule, Incident, IncidentLog
 from .serializers import AlertRuleSerializer, IncidentLogSerializer, IncidentSerializer
@@ -113,6 +114,51 @@ class IncidentViewSet(viewsets.ModelViewSet):
             note=note_text,
         )
 
+        return Response(IncidentSerializer(incident).data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=["post"], url_path='assign')
+    def assign(self, request, pk=None):
+        """Assign or reassign an incident to a team member (or unassign)."""
+        incident  = self.get_object()
+        assigned_to_id =  request.data.get('assigned_to')
+
+        if assigned_to_id:
+            try:
+                new_assignee = User.objects.get(
+                    id=assigned_to_id,
+                    organization=request.user.organization,
+                )
+            except User.DoesNotExist:
+                return Response(
+                    {"detail": "User not found in this organization."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            incident.assigned_to = new_assignee
+            incident.save(update_fields=["assigned_to"])
+
+            IncidentLog.objects.create(
+                incident=incident,
+                actor=request.user,
+                event_type=IncidentLog.EventType.COMMENT,
+                note=f"Incident assigned to {new_assignee.email} by {request.user.email}.",
+            )
+        else:
+            old_assignee = incident.assigned_to
+            incident.assigned_to = None
+            incident.save(update_fields=['assigned_to'])
+
+            unassign_note = (
+                f"Incident unassigned (previously {old_assignee.email}) by {request.user.email}."
+                if old_assignee
+                else f"Incident unassigned by {request.user.email}"
+            )
+
+            IncidentLog.objects.create(
+                incident=incident,
+                actor=request.user,
+                event_type=IncidentLog.EventType.COMMENT,
+                note=unassign_note,
+            )
         return Response(IncidentSerializer(incident).data, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['post'], url_path="triage")

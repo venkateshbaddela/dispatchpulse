@@ -394,3 +394,93 @@ class OutageSimulatorAPITests(APITestCase):
         # Should only have 1 AI_TRIAGE log, not 3
         triage_logs = incident.logs.filter(event_type=IncidentLog.EventType.AI_TRIAGE)
         self.assertEqual(triage_logs.count(), 1)
+
+
+class IncidentAssignmentTests(APITestCase):
+    def setUp(self):
+        self.org_a = Organization.objects.create(name="Acme Corp", slug="acme-corp", api_key="acme-key-1")
+        self.org_b = Organization.objects.create(name="Beta LLC", slug="beta-llc", api_key="beta-key-2")
+
+        self.user_a1 = User.objects.create_user(
+            email="sre1@acme.com",
+            username="sre1@acme.com",
+            password="secretpassword123",
+            organization=self.org_a,
+        )
+        self.user_a2 = User.objects.create_user(
+            email="sre2@acme.com",
+            username="sre2@acme.com",
+            password="secretpassword123",
+            organization=self.org_a,
+        )
+        self.user_b = User.objects.create_user(
+            email="dev@beta.com",
+            username="dev@beta.com",
+            password="secretpassword123",
+            organization=self.org_b,
+        )
+
+        self.token = Token.objects.create(user=self.user_a1)
+        self.client.credentials(HTTP_AUTHORIZATION=f"Token {self.token.key}")
+
+        self.service = Service.objects.create(
+            organization=self.org_a,
+            name="Auth Service",
+            target_url="https://auth.acme.com/health",
+        )
+        self.incident = Incident.objects.create(
+            organization=self.org_a,
+            service=self.service,
+            title="Database Connection Timeout",
+            error_type=Incident.ErrorType.DATABASE,
+            severity=Incident.Severity.P1,
+            status=Incident.Status.TRIGGERED,
+        )
+
+    def test_assign_incident_to_teammate(self):
+        response = self.client.post(
+            f"/api/incidents/{self.incident.id}/assign/",
+            {"assigned_to": self.user_a2.id},
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.incident.refresh_from_db()
+        self.assertEqual(self.incident.assigned_to, self.user_a2)
+
+        # Verify audit log
+        log = self.incident.logs.first()
+        self.assertIsNotNone(log)
+        self.assertEqual(log.actor, self.user_a1)
+        self.assertEqual(log.event_type, IncidentLog.EventType.COMMENT)
+        self.assertIn(f"Incident assigned to {self.user_a2.email} by {self.user_a1.email}", log.note)
+
+    def test_unassign_incident(self):
+        self.incident.assigned_to = self.user_a2
+        self.incident.save()
+
+        response = self.client.post(
+            f"/api/incidents/{self.incident.id}/assign/",
+            {"assigned_to": None},
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.incident.refresh_from_db()
+        self.assertIsNone(self.incident.assigned_to)
+
+        # Verify audit log
+        log = self.incident.logs.first()
+        self.assertIsNotNone(log)
+        self.assertEqual(log.actor, self.user_a1)
+        self.assertEqual(log.event_type, IncidentLog.EventType.COMMENT)
+        self.assertIn("Incident unassigned", log.note)
+
+    def test_cannot_assign_user_from_different_organization(self):
+        response = self.client.post(
+            f"/api/incidents/{self.incident.id}/assign/",
+            {"assigned_to": self.user_b.id},
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.incident.refresh_from_db()
+        self.assertIsNone(self.incident.assigned_to)
+

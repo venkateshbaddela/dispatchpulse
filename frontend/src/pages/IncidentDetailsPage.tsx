@@ -16,6 +16,8 @@ import {
   Sparkles,
 } from "lucide-react";
 import { incidentsApi } from "../api/incidents.api";
+import { authApi } from "../api/auth.api";
+import { useAuth } from "../context/useAuth";
 import { type IncidentSeverity, type IncidentStatus } from "../types/incident";
 import { Badge, type BadgeVariant } from "../components/ui/Badge";
 import { Button } from "../components/ui/Button";
@@ -57,6 +59,26 @@ export const IncidentDetailPage: React.FC = () => {
   const triageMutation = useMutation({
     mutationFn: () => incidentsApi.triageIncident(id!),
     onSuccess: invalidateIncidentState,
+  });
+
+  const { user: currentUser } = useAuth();
+
+  const { data: users = [] } = useQuery({
+    queryKey: ["users"],
+    queryFn: authApi.getUsers,
+  });
+
+  const assignMutation = useMutation({
+    mutationFn: (assignToId: number | null) =>
+      incidentsApi.assignIncident(id!, assignToId),
+    onSuccess: invalidateIncidentState,
+  });
+
+  const sortedUsers = [...users].sort((a, b) => {
+    if (a.is_on_call === b.is_on_call) {
+      return a.email.localeCompare(b.email);
+    }
+    return a.is_on_call ? -1 : 1;
   });
 
   const handleCopyLogs = async () => {
@@ -296,15 +318,48 @@ export const IncidentDetailPage: React.FC = () => {
                 </span>
               </div>
 
-              <div className="flex items-center justify-between">
-                <span className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
-                  <UserIcon className="h-4 w-4" /> Assigned To
-                </span>
-                <span className="font-medium text-slate-900 dark:text-slate-100">
-                  {incident.assigned_to
-                    ? incident.assigned_to.email
-                    : "Unassigned"}
-                </span>
+              <div className="pt-2 border-t border-slate-100 dark:border-obsidian-border/50 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+                    <UserIcon className="h-4 w-4" /> Assigned To
+                  </span>
+                  {!incident.assigned_to && currentUser && (
+                    <button
+                      type="button"
+                      onClick={() => assignMutation.mutate(currentUser.id)}
+                      disabled={assignMutation.isPending}
+                      className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 hover:underline cursor-pointer disabled:opacity-50"
+                    >
+                      Claim Incident
+                    </button>
+                  )}
+                </div>
+                <div className="relative">
+                  <select
+                    value={incident.assigned_to ? String(incident.assigned_to.id) : ""}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      assignMutation.mutate(val ? Number(val) : null);
+                    }}
+                    disabled={assignMutation.isPending}
+                    aria-label="Assign responder"
+                    className="w-full rounded-lg border border-slate-300 dark:border-obsidian-border bg-white dark:bg-obsidian-card px-2.5 py-1.5 text-xs font-medium text-slate-800 dark:text-slate-200 focus:outline-hidden focus:ring-2 focus:ring-indigo-500 cursor-pointer disabled:opacity-50"
+                  >
+                    <option value="">⚪ Unassigned</option>
+                    {sortedUsers.map((u) => {
+                      const isCurrentUser = currentUser?.id === u.id;
+                      const displayName = u.first_name || u.last_name
+                        ? `${u.first_name} ${u.last_name}`.trim()
+                        : u.email;
+                      const label = `${u.is_on_call ? "🟢" : "⚪"} ${displayName}${u.is_on_call ? " (On-Call)" : ""}${isCurrentUser ? " - You" : ""}`;
+                      return (
+                        <option key={u.id} value={u.id}>
+                          {label}
+                        </option>
+                      );
+                    })}
+                  </select>
+                </div>
               </div>
 
               <div className="flex items-center justify-between">

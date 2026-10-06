@@ -14,11 +14,33 @@ class OrganizationSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     organization = OrganizationSerializer(read_only=True)
+    active_incidents_count = serializers.SerializerMethodField()
+    password = serializers.CharField(write_only=True, required=False, min_length=8)
 
     class Meta:
         model = User
-        fields = ["id", "email", "role", "is_on_call", "organization", "first_name", "last_name"]
-        read_only_fields = ["id", "organization"]
+        fields = ["id", "email", "role", "is_on_call", "organization", "first_name", "last_name", "active_incidents_count", "password"]
+        read_only_fields = ["id", "organization", "active_incidents_count"]
+
+    def get_active_incidents_count(self, obj) -> int:
+        from incidents.models import Incident
+        return obj.assigned_incidents.exclude(status=Incident.Status.RESOLVED).count()
+
+    def validate_email(self, value):
+        user_id = self.instance.id if self.instance else None
+        if User.objects.filter(email__iexact=value).exclude(id=user_id).exists():
+            raise serializers.ValidationError("A user with this email already exists.")
+        return value.lower()
+
+    def create(self, validated_data):
+        password = validated_data.pop("password", None)
+        email = validated_data.get("email")
+        validated_data["username"] = email
+        user = User.objects.create(**validated_data)
+        if password:
+            user.set_password(password)
+            user.save()
+        return user
 
 class RegisterSerializer(serializers.Serializer):
     org_name = serializers.CharField(max_length=120, write_only=True)
