@@ -43,7 +43,7 @@ Built as a decoupled monorepo featuring a high-performance **Django REST Framewo
       ┌─────────────────────┐     ┌─────────────────────┐      ┌────────────────────┐
       │   Telemetry Engine  │     │   AI Triage Pipeline│      │    SSRF Guardrail  │
       │ Concurrent Pinger   │     │ Structured JSON     │      │ RFC 1918 / Cloud   │
-      │ 90-Segment History  │     │ Root-Cause Diagnosis│      │ Metadata Shield    │
+      │ 30-Check History    │     │ Root-Cause Diagnosis│      │ Metadata Shield    │
       └──────────┬──────────┘     └──────────┬──────────┘      └──────────┬─────────┘
                  │                           │                            │
                  └───────────────────┬───────┴────────────────────────────┘
@@ -58,7 +58,7 @@ Built as a decoupled monorepo featuring a high-performance **Django REST Framewo
 
 ## ✨ Key Platform Features
 
-### 1. Real-Time Telemetry Engine & 90-Day Telemetry Bars
+### 1. Real-Time Telemetry Engine & 30-Check Telemetry Bars
 - **Concurrent Polling:** Multi-threaded worker pool (`ThreadPoolExecutor`) dispatches parallel health checks without blocking requests.
 - **Micro-Precision Latency:** Measures millisecond response latency using `time.perf_counter()`.
 - **Interactive Segmented Bars:** Displays color-graded status segments for each service target with average latency tooltips.
@@ -223,8 +223,3 @@ dispatchpulse/
 └── README.md
 ```
 
----
-
-## 📜 License
-
-This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
