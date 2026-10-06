@@ -18,6 +18,7 @@ class HealthCheckLogSerializer(serializers.ModelSerializer):
 class ServiceSerializer(serializers.ModelSerializer):
     latest_check = serializers.SerializerMethodField()
     alert_rule = serializers.SerializerMethodField()
+    recent_checks = serializers.SerializerMethodField()
 
     class Meta:
         model = Service
@@ -32,6 +33,7 @@ class ServiceSerializer(serializers.ModelSerializer):
             'created_at',
             'latest_check',
             'alert_rule',
+            'recent_checks',
         ]
         read_only_fields = [
             'id',
@@ -41,6 +43,7 @@ class ServiceSerializer(serializers.ModelSerializer):
             'created_at',
             'latest_check',
             'alert_rule',
+            'recent_checks',
         ]
 
     def get_latest_check(self, obj):
@@ -59,3 +62,17 @@ class ServiceSerializer(serializers.ModelSerializer):
                 "is_active": rule.is_active,
             }
         return None
+
+    def get_recent_checks(self, obj):
+        logs = list(obj.health_logs.order_by('-checked_at')[:30])
+        logs.reverse()
+        return [
+            {
+                "id": log.id,
+                "is_success": log.is_success,
+                "status_code": log.status_code,
+                "latency_ms": log.latency_ms,
+                "checked_at": log.checked_at.isoformat(),
+            }
+            for log in logs
+        ]

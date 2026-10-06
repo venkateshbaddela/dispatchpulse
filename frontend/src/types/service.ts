@@ -17,6 +17,14 @@ export interface ServiceAlertRuleInfo {
   is_active: boolean;
 }
 
+export interface TelemetryCheckItem {
+  id: number;
+  is_success: boolean;
+  status_code: number | null;
+  latency_ms: number | null;
+  checked_at: string;
+}
+
 export interface Service {
   id: string;
   organization: string;
@@ -28,6 +36,7 @@ export interface Service {
   created_at: string;
   latest_check?: HealthCheckLog | null;
   alert_rule?: ServiceAlertRuleInfo | null;
+  recent_checks?: TelemetryCheckItem[];
 }
 
 export interface KPISummary {

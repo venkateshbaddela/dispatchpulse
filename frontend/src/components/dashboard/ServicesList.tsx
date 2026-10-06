@@ -146,8 +146,9 @@ export const ServicesList: React.FC<ServicesListProps> = ({
                 <span>Interval: {service.check_interval_sec}s</span>
             </div>
             <LatencyBar
-            service_status={service.status}
-            avgLatencyMs={service.latest_check?.latency_ms ?? 45}
+              service_status={service.status}
+              avgLatencyMs={service.latest_check?.latency_ms ?? 45}
+              recent_checks={service.recent_checks}
             />
             </div>
           </div>
