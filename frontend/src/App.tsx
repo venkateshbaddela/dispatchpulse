@@ -6,6 +6,7 @@ import { ProtectedRoute } from "./components/layout/ProtectedRoute";
 import { AppLayout } from "./components/layout/AppLayout";
 
 import { LoginPage } from "./pages/auth/LoginPage";
+import { LandingPage } from "./pages/LandingPage";
 import { Dashboard } from "./pages/Dashboard";
 import { ServicesPage } from "./pages/ServicesPage";
 import { IncidentDetailPage } from "./pages/IncidentDetailsPage";
@@ -32,17 +33,18 @@ export default function App() {
           <BrowserRouter>
             <Routes>           
               {/* Public Routes */}
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/status/:slug" element={<PublicStatusPage/>}/>
+              <Route path="/" element={<LandingPage />} />
               <Route path="/is-it-down" element={<PublicProbePage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<LoginPage defaultMode="register" />} />
+              <Route path="/status/:slug" element={<PublicStatusPage />} />
 
-
-              {/* Protected Workspace Layout */}
+              {/* Protected Workspace Layout - All Links Require Authentication */}
               <Route element={<ProtectedRoute />}>
                 <Route element={<AppLayout />}>
-                  <Route path="/" element={<Dashboard />} />
+                  <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/services" element={<ServicesPage />} />
-                  <Route path="/incidents" element={<IncidentsPage/>}/>
+                  <Route path="/incidents" element={<IncidentsPage />} />
                   <Route
                     path="/incidents/:id"
                     element={<IncidentDetailPage />}

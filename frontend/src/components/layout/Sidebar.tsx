@@ -1,40 +1,65 @@
 import React from "react";
-import { NavLink } from "react-router-dom";
-import { Activity, Layers, AlertTriangle, LogOut, Globe, Users } from "lucide-react";
+import { NavLink, Link } from "react-router-dom";
+import { Activity, Layers, AlertTriangle, LogOut, Globe, Users, ExternalLink } from "lucide-react";
 import { useAuth } from "../../context/useAuth";
 import { Logo } from "../ui/Logo";
 
 export const Sidebar: React.FC = () => {
   const { user, logout } = useAuth();
+  const orgSlug = user?.organization?.slug;
 
   const navItems = [
-    { label: "Dashboard", path: "/", icon: Activity },
+    { label: "Dashboard", path: "/dashboard", icon: Activity },
     { label: "Services", path: "/services", icon: Layers },
     { label: "Incidents", path: "/incidents", icon: AlertTriangle },
     { label: "Team", path: "/team", icon: Users },
-    { label: "Is It Down?", path: "/is-it-down", icon: Globe },
+    ...(orgSlug
+      ? [{ label: "Public Status", path: `/status/${orgSlug}`, icon: Globe, isExternal: true }]
+      : []),
   ];
 
   return (
     <aside className="w-64 shrink-0 flex flex-col justify-between border-r border-slate-200 dark:border-obsidian-border bg-white dark:bg-obsidian-sidebar">
       <div>
         {/* Brand & Organization */}
-        <div className="h-16 flex items-center gap-3 px-6 border-b border-slate-200 dark:border-obsidian-border">
+        <Link
+          to="/"
+          title="DispatchPulse Home"
+          className="h-16 flex items-center gap-3 px-6 border-b border-slate-200 dark:border-obsidian-border hover:opacity-90 transition-opacity cursor-pointer"
+        >
           <Logo size="md" showText={true} />
           <span className="text-[10px] font-mono text-slate-500 truncate dark:text-slate-400 ml-11 -mt-1">
             {user?.organization?.name || "Workspace"}
           </span>
-        </div>
+        </Link>
 
         {/* Navigation Links */}
         <nav className="p-4 space-y-1">
           {navItems.map((item) => {
             const Icon = item.icon;
+            if (item.isExternal) {
+              return (
+                <a
+                  key={item.path}
+                  href={item.path}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between px-3.5 py-2.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-obsidian-hover hover:text-slate-900 dark:hover:text-slate-100 transition-all cursor-pointer"
+                  title="Open Customer-Facing Status Page"
+                >
+                  <div className="flex items-center gap-3">
+                    <Icon className="w-4 h-4 text-emerald-500" />
+                    <span>{item.label}</span>
+                  </div>
+                  <ExternalLink className="w-3.5 h-3.5 opacity-60" />
+                </a>
+              );
+            }
             return (
               <NavLink
                 key={item.path}
                 to={item.path}
-                end={item.path === "/"}
+                end={item.path === "/dashboard"}
                 className={({ isActive }) =>
                   `flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-medium transition-all ${
                     isActive

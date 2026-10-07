@@ -1,14 +1,17 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { servicesApi } from "../api/services.api";
 import { incidentsApi } from "../api/incidents.api";
+import { useAuth } from "../context/useAuth";
 import { KPICards } from "../components/dashboard/KPICards";
 import { ServicesList } from "../components/dashboard/ServicesList";
-import { Activity, Flame, ShieldAlert } from "lucide-react";
+import { Activity, Flame, ShieldAlert, ExternalLink } from "lucide-react";
 import { IncidentQueueTable } from "../components/dashboard/IncidentQueueTable";
 import { OutageSimulatorModal } from "../components/dashboard/OutageSimulatorModal";
 
 export const Dashboard: React.FC = () => {
+  const { user } = useAuth();
   const [isSimulatorOpen, setIsSimulatorOpen] = useState(false);
 
   // 1. Fetch Top Bento KPI Summary (30s background polling)
@@ -46,7 +49,20 @@ export const Dashboard: React.FC = () => {
         </div>
 
         {/* Header Actions */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
+          {user?.organization?.slug && (
+            <Link
+              to={`/status/${user.organization.slug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              title={`View live public customer status page (/status/${user.organization.slug})`}
+              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-obsidian-card dark:hover:bg-obsidian-hover text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-obsidian-border transition-colors shadow-xs"
+            >
+              <span>Public Status Page</span>
+              <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
+            </Link>
+          )}
+
           <button
             type="button"
             onClick={() => setIsSimulatorOpen(true)}

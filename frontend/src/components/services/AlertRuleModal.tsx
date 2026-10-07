@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Bell, Sliders, X, CheckCircle2, ShieldAlert } from "lucide-react";
+import { Bell, Sliders, CheckCircle2, ShieldAlert } from "lucide-react";
 import axios from "axios";
 import { incidentsApi } from "../../api/incidents.api";
 import type { Service } from "../../types/service";
 import { Button } from "../ui/Button";
+import { Modal } from "../ui/Modal";
 
 interface AlertRuleModalProps {
   isOpen: boolean;
@@ -114,35 +115,15 @@ const AlertRuleModalDialog: React.FC<Omit<AlertRuleModalProps, "isOpen">> = ({
   if (!service) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs">
-      <div className="w-full max-w-lg rounded-2xl bg-white dark:bg-obsidian-card border border-slate-200 dark:border-obsidian-border shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-        {/* Modal Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-obsidian-border">
-          <div className="flex items-center gap-2.5">
-            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-amber-500/10 text-amber-500">
-              <Sliders className="w-4 h-4" />
-            </div>
-            <div>
-              <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100">
-                Tune Alert Rules & Thresholds
-              </h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                Target: <span className="font-semibold text-slate-700 dark:text-slate-300">{service.name}</span>
-              </p>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-obsidian-hover transition-colors cursor-pointer"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-
-        {/* Modal Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      title="Tune Alert Rules & Thresholds"
+      subtitle={`Target: ${service.name}`}
+      icon={<Sliders className="w-4 h-4" />}
+      maxWidth="lg"
+    >
+      <form onSubmit={handleSubmit} className="p-6 space-y-5">
           {errorMessage && (
             <div className="p-3 rounded-lg text-xs font-medium bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
               {errorMessage}
@@ -317,8 +298,7 @@ const AlertRuleModalDialog: React.FC<Omit<AlertRuleModalProps, "isOpen">> = ({
             </Button>
           </div>
         </form>
-      </div>
-    </div>
+    </Modal>
   );
 };
 

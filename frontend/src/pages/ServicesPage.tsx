@@ -1,24 +1,16 @@
+import React, { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  Activity,
-  Bell,
   CheckCircle2,
-  Clock,
-  Edit2,
-  ExternalLink,
   Globe,
   Plus,
   Radio,
   RefreshCw,
-  Sliders,
-  Trash2,
-  Zap,
 } from "lucide-react";
-import React, { useState } from "react";
 import { servicesApi } from "../api/services.api";
-import { LatencyBar } from "../components/dashboard/LatencyBar";
 import { AlertRuleModal } from "../components/services/AlertRuleModal";
 import { ServiceModal } from "../components/services/ServiceModal";
+import { ServiceCard } from "../components/services/ServiceCard";
 import { Button } from "../components/ui/Button";
 import type { BatchPingResult, Service } from "../types/service";
 
@@ -36,9 +28,7 @@ export const ServicesPage: React.FC = () => {
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   // Batch probe feedback state
-  const [batchFeedback, setBatchFeedback] = useState<BatchPingResult | null>(
-    null,
-  );
+  const [batchFeedback, setBatchFeedback] = useState<BatchPingResult | null>(null);
 
   // Cache invalidation helper
   const invalidateServices = () => {
@@ -116,66 +106,85 @@ export const ServicesPage: React.FC = () => {
                 Monitored Services
               </h1>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                HTTP endpoint targets, real-time health checks & telemetry polling cadence
+                HTTP endpoint targets, real-time health checks &amp; telemetry polling cadence
               </p>
             </div>
           </div>
         </div>
 
-        {/* Global Actions Bar */}
+        {/* Action Controls */}
         <div className="flex items-center gap-2.5">
-          {/* Batch Result Feedback Pill */}
-          {batchFeedback && (
-            <div className="animate-in fade-in zoom-in-95 duration-150 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-              <CheckCircle2 className="w-3.5 h-3.5" />
-              <span>
-                Probed {batchFeedback.total}: {batchFeedback.success} OK, {batchFeedback.failed} Failed
-              </span>
-            </div>
-          )}
-
-          {/* Ping All Now Button */}
-          <button
-            type="button"
+          <Button
+            variant="secondary"
+            size="sm"
             onClick={() => pingAllMutation.mutate()}
-            disabled={pingAllMutation.isPending || services.length === 0}
-            className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-obsidian-card dark:hover:bg-obsidian-hover text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-obsidian-border transition-colors disabled:opacity-50 cursor-pointer"
+            isLoading={pingAllMutation.isPending}
+            disabled={services.length === 0}
+            className="gap-2 shadow-xs cursor-pointer"
           >
-            <RefreshCw
-              className={`w-3.5 h-3.5 ${pingAllMutation.isPending ? "animate-spin text-indigo-500" : ""}`}
-            />
-            <span>{pingAllMutation.isPending ? "Probing All..." : "Ping All Now"}</span>
-          </button>
+            <RefreshCw className={`w-3.5 h-3.5 ${pingAllMutation.isPending ? "animate-spin text-indigo-500" : ""}`} />
+            <span>Ping All Targets</span>
+          </Button>
 
-          {/* Register Target Button */}
           <Button
             variant="primary"
             size="sm"
             onClick={handleOpenCreateModal}
-            className="gap-1.5 shadow-sm"
+            className="gap-2 shadow-xs cursor-pointer"
           >
             <Plus className="w-4 h-4" />
-            <span>Register Target</span>
+            <span>Register Service</span>
           </Button>
         </div>
       </div>
 
-      {/* Loading Skeleton */}
+      {/* Batch Feedback Banner */}
+      {batchFeedback && (
+        <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-800 dark:text-emerald-300 flex items-center justify-between text-xs animate-in fade-in duration-200">
+          <div className="flex items-center gap-2.5">
+            <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+            <span>
+              <strong>Batch Probe Complete:</strong> {batchFeedback.total} service(s) checked ({batchFeedback.success} passed, {batchFeedback.failed} failed).
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setBatchFeedback(null)}
+            className="text-emerald-700 dark:text-emerald-400 hover:opacity-75 font-bold px-2 py-0.5 rounded cursor-pointer"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
+      {/* Skeleton Loading State */}
       {isLoading && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[...Array(6)].map((_, i) => (
+          {[...Array(6)].map((_, idx) => (
             <div
-              key={i}
-              className="h-48 rounded-xl bg-white dark:bg-obsidian-card border border-slate-200 dark:border-obsidian-border animate-pulse p-5"
-            />
+              key={idx}
+              className="h-64 rounded-xl bg-white dark:bg-obsidian-card border border-slate-200 dark:border-obsidian-border animate-pulse p-5 space-y-4"
+            >
+              <div className="flex justify-between items-center">
+                <div className="h-5 w-32 bg-slate-200 dark:bg-slate-800 rounded" />
+                <div className="h-5 w-20 bg-slate-200 dark:bg-slate-800 rounded-full" />
+              </div>
+              <div className="h-4 w-48 bg-slate-100 dark:bg-slate-800/60 rounded" />
+              <div className="grid grid-cols-2 gap-2">
+                <div className="h-12 bg-slate-100 dark:bg-slate-800/40 rounded-lg" />
+                <div className="h-12 bg-slate-100 dark:bg-slate-800/40 rounded-lg" />
+              </div>
+              <div className="h-6 bg-slate-100 dark:bg-slate-800/40 rounded" />
+              <div className="h-8 bg-slate-100 dark:bg-slate-800/40 rounded mt-4" />
+            </div>
           ))}
         </div>
       )}
 
       {/* Empty State */}
       {!isLoading && services.length === 0 && (
-        <div className="p-12 text-center rounded-2xl bg-white dark:bg-obsidian-card border border-slate-200 dark:border-obsidian-border shadow-xs">
-          <div className="w-12 h-12 rounded-xl bg-indigo-500/10 text-indigo-500 mx-auto mb-3 flex items-center justify-center">
+        <div className="p-12 text-center rounded-2xl bg-white dark:bg-obsidian-card border border-dashed border-slate-300 dark:border-obsidian-border shadow-xs">
+          <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-slate-100 dark:bg-obsidian-canvas flex items-center justify-center text-slate-400">
             <Globe className="w-6 h-6" />
           </div>
           <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 mb-1">
@@ -191,202 +200,44 @@ export const ServicesPage: React.FC = () => {
         </div>
       )}
 
-      {/* Services Grid */}
+      {/* Services Grid using modular ServiceCard */}
       {!isLoading && services.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {services.map((service) => {
-            const isOperational = service.status === "OPERATIONAL";
-            const isDegraded = service.status === "DEGRADED";
-            const isPinging = activePingingId === service.id;
-            const isDeleting = deletingId === service.id;
-
-            return (
-              <div
-                key={service.id}
-                className="flex flex-col justify-between p-5 rounded-xl bg-white dark:bg-obsidian-card border border-slate-200 dark:border-obsidian-border hover:border-slate-300 dark:hover:border-obsidian-hover transition-colors shadow-xs"
-              >
-                <div>
-                  {/* Top Bar: Name & Status Pill */}
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    <h3 className="text-sm font-bold tracking-tight text-slate-900 dark:text-slate-100 truncate">
-                      {service.name}
-                    </h3>
-                    <span
-                      className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold shrink-0 ${
-                        isOperational
-                          ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
-                          : isDegraded
-                            ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20"
-                            : "bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20"
-                      }`}
-                    >
-                      <span
-                        className={`w-1.5 h-1.5 rounded-full ${
-                          isOperational
-                            ? "bg-emerald-500"
-                            : isDegraded
-                              ? "bg-amber-500"
-                              : "bg-rose-500 animate-ping"
-                        }`}
-                      />
-                      {isOperational
-                        ? "Operational"
-                        : isDegraded
-                          ? "Degraded"
-                          : "Major Outage"}
-                    </span>
-                  </div>
-
-                  {/* Endpoint URL */}
-                  <a
-                    href={service.target_url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-cyan-400 transition-colors mb-4 truncate max-w-full"
-                  >
-                    <span className="truncate">{service.target_url}</span>
-                    <ExternalLink className="w-3 h-3 shrink-0" />
-                  </a>
-
-                  {/* Metadata Row: Polling Cadence & Latency */}
-                  <div className="grid grid-cols-2 gap-2 mb-4">
-                    <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-obsidian-canvas border border-slate-100 dark:border-obsidian-border">
-                      <div className="flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400 mb-0.5">
-                        <Clock className="w-3 h-3" />
-                        <span>Interval</span>
-                      </div>
-                      <span className="text-xs font-semibold text-slate-800 dark:text-slate-200">
-                        Every {service.check_interval_sec}s
-                      </span>
-                    </div>
-
-                    <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-obsidian-canvas border border-slate-100 dark:border-obsidian-border">
-                      <div className="flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400 mb-0.5">
-                        <Activity className="w-3 h-3 text-cyan-500" />
-                        <span>Latency</span>
-                      </div>
-                      <span className="text-xs font-mono font-semibold text-slate-800 dark:text-cyan-400">
-                        {service.latest_check?.latency_ms != null
-                          ? `${service.latest_check.latency_ms} ms`
-                          : "Pending"}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Latency Telemetry Bar */}
-                  <div className="mb-3">
-                    <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 mb-1.5">
-                      <span className="inline-flex items-center gap-1 font-medium">
-                        <Zap className="w-3 h-3 text-indigo-500" />
-                        Telemetry Health
-                      </span>
-                      <span>
-                        {service.last_checked_at
-                          ? new Date(service.last_checked_at).toLocaleTimeString()
-                          : "Never"}
-                      </span>
-                    </div>
-                    <LatencyBar
-                      service_status={service.status}
-                      avgLatencyMs={service.latest_check?.latency_ms ?? 45}
-                      recent_checks={service.recent_checks}
-                    />
-                  </div>
-
-                  {/* Alert Threshold Info Chip */}
-                  <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 mb-4 px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-obsidian-canvas border border-slate-100 dark:border-obsidian-border">
-                    <div className="flex items-center gap-1.5 font-medium">
-                      <Bell className="w-3 h-3 text-amber-500" />
-                      <span>Alert Rule</span>
-                    </div>
-                    {service.alert_rule ? (
-                      <span className="font-mono text-[11px] font-semibold text-slate-700 dark:text-slate-300">
-                        {service.alert_rule.is_active ? (
-                          `${service.alert_rule.consecutive_failures} fails • ${(service.alert_rule.timeout_ms / 1000).toFixed(0)}s`
-                        ) : (
-                          <span className="text-slate-400 dark:text-slate-500 italic">Disabled</span>
-                        )}
-                      </span>
-                    ) : (
-                      <span className="text-slate-400 dark:text-slate-500">Default (3 fails • 5s)</span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Footer Action Buttons */}
-                <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-obsidian-border">
-                  <button
-                    type="button"
-                    onClick={() => pingMutation.mutate(service.id)}
-                    disabled={isPinging || isDeleting}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-obsidian-canvas dark:hover:bg-obsidian-hover text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-obsidian-border transition-colors disabled:opacity-50 cursor-pointer"
-                  >
-                    <RefreshCw
-                      className={`w-3.5 h-3.5 ${isPinging ? "animate-spin text-indigo-500" : ""}`}
-                    />
-                    <span>{isPinging ? "Pinging..." : "Ping Now"}</span>
-                  </button>
-
-                  <div className="flex items-center gap-1">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setServiceForAlerts(service);
-                        setIsAlertModalOpen(true);
-                      }}
-                      disabled={isDeleting}
-                      title="Tune Alert Rules"
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-amber-500 dark:hover:text-amber-400 hover:bg-slate-100 dark:hover:bg-obsidian-hover transition-colors cursor-pointer"
-                    >
-                      <Sliders className="w-3.5 h-3.5" />
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => handleOpenEditModal(service)}
-                      disabled={isDeleting}
-                      title="Edit Service"
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-obsidian-hover transition-colors cursor-pointer"
-                    >
-                      <Edit2 className="w-3.5 h-3.5" />
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteService(service)}
-                      disabled={isDeleting}
-                      title="Delete Service"
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+          {services.map((service) => (
+            <ServiceCard
+              key={service.id}
+              service={service}
+              isPinging={activePingingId === service.id}
+              isDeleting={deletingId === service.id}
+              onPing={(id) => pingMutation.mutate(id)}
+              onOpenAlerts={(svc) => {
+                setServiceForAlerts(svc);
+                setIsAlertModalOpen(true);
+              }}
+              onEdit={handleOpenEditModal}
+              onDelete={handleDeleteService}
+            />
+          ))}
         </div>
       )}
 
-      {/* Create / Edit Service Modal */}
+      {/* Modals */}
       <ServiceModal
         isOpen={isModalOpen}
-        onClose={() => {
-          setIsModalOpen(false);
-          setServiceToEdit(null);
-        }}
+        onClose={() => setIsModalOpen(false)}
         serviceToEdit={serviceToEdit}
       />
 
-      {/* Alert Rule Configuration Modal */}
-      <AlertRuleModal
-        isOpen={isAlertModalOpen}
-        onClose={() => {
-          setIsAlertModalOpen(false);
-          setServiceForAlerts(null);
-        }}
-        service={serviceForAlerts}
-      />
+      {serviceForAlerts && (
+        <AlertRuleModal
+          isOpen={isAlertModalOpen}
+          onClose={() => {
+            setIsAlertModalOpen(false);
+            setServiceForAlerts(null);
+          }}
+          service={serviceForAlerts}
+        />
+      )}
     </div>
   );
 };

@@ -7,7 +7,7 @@
 - **Tagline:** Real-Time Service Health Monitoring & AI-Assisted Incident Triage Platform
 - **Architecture:** Decoupled Monorepo (`/backend` Django REST API + `/frontend` React Vite SPA)
 - **Target Audience:** Engineering teams, SREs, on-call responders, and public status viewers
-- **Stack & Environment:** Python 3.12, Django 5.x, DRF, PostgreSQL (psycopg), Vite + React
+- **Stack & Environment:** Python 3.12+, Django 5.x, DRF, SQLite (`db.sqlite3`), React 19 + Vite
 
 ---
 
@@ -26,15 +26,15 @@
 
 - **Framework:** Python 3.12 / Django 5.x
 - **API Engine:** Django REST Framework (DRF)
-- **Database:** PostgreSQL (`psycopg` v3)
+- **Database:** SQLite (`db.sqlite3`)
 - **Auth:** DRF TokenAuthentication / SessionAuth with custom user model
 - **Network Requests:** `requests` (for live URL status pinging)
-- **AI Triage:** Free-tier Groq API (`llama-3.3-70b-versatile`) / Gemini Flash via structured JSON output
+- **AI Triage:** Free-tier Groq API (`llama-3.3-70b-versatile`) / Gemini Flash via structured JSON output + local heuristic rule engine fallback
 - **CORS:** `django-cors-headers`
 
 ### Frontend
 
-- **Framework:** React 18+ with TypeScript
+- **Framework:** React 19 with TypeScript
 - **Build Tool:** Vite
 - **Styling:** Tailwind CSS (Modern SRE Workspace theme, Dark Mode default with Light toggle)
 - **Icons:** Lucide React (`lucide-react`)
@@ -71,7 +71,7 @@
 
 ### Visual Hierarchy & Layout Architecture
 - **Top Row Bento Grid (Summary Metrics):** 4 elevated summary cards with prominent numbers and trend pills (Total Services, Active Incidents, MTTA/MTTR, System Uptime).
-- **Interactive Service Bars (90-Day Telemetry):** Under each monitored service card, display an interactive 90-segment latency/uptime bar with micro-tooltips.
+- **Interactive Service Bars (30-Check Telemetry):** Under each monitored service card, display an interactive 30-segment latency/uptime bar with micro-tooltips.
 - **Incident Queue Table:** Filterable table by severity (`P1`–`P4`), status pills (`Triggered`, `Acknowledged`, `Resolved`), and responder avatar chips with online/on-call indicators.
 - **AI Incident Investigation Terminal:** A dedicated copilot drawer/card with a violet gradient border, streaming typewriter-style AI root-cause diagnosis, and monospace stack trace tags.
 - **Keyboard Shortcuts & Chrome:** Integrated `⌘K` / `Ctrl+K` search bar indicator in top navigation.
@@ -80,30 +80,45 @@
 
 ## 5. Application Pages & Route Structure
 
-1. **Dashboard (`/`):**
+1. **Public Landing Page (`/`):**
+   - Modern SRE presentation gateway with platform overview, feature bento grid, and architecture walkthrough.
+   - Embedded interactive "Check Any Website" availability probe widget.
+   - Universal authentication access gate with instant redirects.
+2. **Dashboard (`/dashboard`):**
    - KPI stat cards: Active Incidents, Overall System Status, Average Ping Latency, Open P1s.
-   - Quick "Simulate Crash / Webhook" test button.
-   - Filterable data table of active incidents.
-2. **Services Management (`/services`):**
+   - Quick "Simulate Crash / Webhook" test button with 5 scenario drills.
+   - Interactive 30-check service bars and filterable data table of active incidents.
+3. **Services Management (`/services`):**
    - Grid cards of all monitored services (_Auth API, Stripe Gateway, Database_).
-   - 90-day segmented uptime/latency visual bar under each service.
-   - Shows live target URL (e.g., `https://httpbin.org/status/500`).
-   - "Ping All Now" manual trigger button with millisecond latency badges.
-3. **Incident Detail & Triage (`/incidents/:id`):**
+   - 30-check segmented uptime/latency visual bar with tooltip diagnostics under each service.
+   - Service registration and alert rule editing modals with configurable cadence options (15s, 30s, 60s, 300s).
+   - "Ping All Now" batch health probe button with live response telemetry.
+4. **Dedicated Incident Archive & Queue (`/incidents`):**
+   - Full multi-filter incident center (filter by severity P1-P4, status TRIGGERED/ACKNOWLEDGED/RESOLVED, and service target).
+   - Real-time search by title or stack trace logs with incident pagination.
+5. **Incident Detail & Triage (`/incidents/:id`):**
    - Header with status lifecycle buttons: `Triggered` ➔ `Acknowledged` ➔ `Resolved`.
-   - Raw stack trace terminal block (`font-mono`).
+   - Raw stack trace terminal block (`font-mono`) with one-click clipboard copy.
+   - Responder assignment dropdown delegating incidents to registered team members.
    - **"Auto-Triage with AI"** copilot terminal card triggering automated analysis:
-     - Root-cause diagnosis (1 sentence)
-     - Severity assessment (`P1`-`P4`)
-     - Immediate recommended remediation steps
+     - Root-cause diagnosis (`root_cause`)
+     - Immediate recommended remediation steps (`recommended_fix`)
+     - Diagnostic confidence score (`confidence`)
+     - Automatic graceful fallback to deterministic rule engine when LLM keys are absent.
    - Activity Timeline (log of every state change, note, and assignment).
-4. **Public Status Page (`/status/:org_slug`):**
+6. **Team & On-Call Directory (`/team`):**
+   - Team roster directory displaying user roles (`ADMIN`, `RESPONDER`, `VIEWER`).
+   - Active on-call responder shift toggle (`is_on_call`).
+   - Workspace member invitation modal.
+7. **Public Status Page (`/status/:org_slug`):**
    - Ultra-clean view for external customers: "All Systems Operational" or "Partial Outage Detected".
-   - 90-day history uptime bars.
-5. **Public Website Availability Checker ("Is It Down Right Now?") (`/is-it-down`):**
+   - Per-service status and 30-check uptime history bars.
+8. **Public Website Availability Checker ("Is It Down Right Now?") (`/is-it-down`):**
    - Unauthenticated instant URL probe tool for any public domain or endpoint (e.g. Netflix, GitHub).
-   - Live probe diagnostics: HTTP status code, round-trip latency (ms), SSL certificate status, reachable indicator.
+   - Live probe diagnostics: HTTP status code, round-trip latency (ms), resolved IP address, reachable indicator, and SSRF security check.
    - Conversion banner encouraging visitors to set up 24/7 monitoring and AI incident triage on DispatchPulse.
+9. **Authentication Gateway (`/login`):**
+   - DRF Token-authenticated login and new organization registration gateway with demo credential quick-fill.
 
 ---
 
@@ -200,13 +215,15 @@
 - **F06:** Automated HTTP Health Pinger engine & alert threshold trigger. [DONE]
 - **F07:** DRF API ViewSets, Serializers & incident lifecycle actions. [DONE]
 - **F08:** React Vite Setup & Tailwind modern SRE workspace theme. [DONE]
-- **F09:** Frontend Dashboard (KPI cards, Incident Table, 90-day Service Bars). [DONE]
+- **F09:** Frontend Dashboard (KPI cards, Incident Table, 30-check Service Bars). [DONE]
 - **F10:** Incident Detail Drawer & Public Status Page (`/status/:slug`). [DONE]
-- **F11:** Automated AI Incident Triage Pipeline (Groq / Gemini free-tier structured JSON output worker + trigger UI). [NEXT]
-- **F12:** Services Management & Interactive Operations (`/services` grid cards, target CRUD modal, "Ping All Now" batch health probe). [PENDING]
-- **F13:** Dedicated Incident Archive & Queue Center (`/incidents` full filterable table by severity/status/service, search & pagination). [PENDING]
-- **F14:** Public Instant Website Availability Checker ("Is It Down Right Now?" `/is-it-down` page, `POST /api/public/probe/` with SSRF protection & rate limiting). [PENDING]
-- **F15:** Alert Rules Configuration UI & Outage Simulator ("Simulate Crash / Webhook" trigger, dynamic threshold tuning). [PENDING]
+- **F11:** Automated AI Incident Triage Pipeline (Groq / Gemini free-tier structured JSON output worker + deterministic heuristic fallback + trigger UI). [DONE]
+- **F12:** Services Management & Interactive Operations (`/services` grid cards, target CRUD modal, "Ping All Now" batch health probe). [DONE]
+- **F13:** Dedicated Incident Archive & Queue Center (`/incidents` full filterable table by severity/status/service, search & pagination). [DONE]
+- **F14:** Public Instant Website Availability Checker ("Is It Down Right Now?" `/is-it-down` page, `POST /api/public/probe/` with SSRF protection & rate limiting). [DONE]
+- **F15:** Alert Rules Configuration UI & Outage Simulator ("Simulate Crash / Webhook" trigger, dynamic threshold tuning). [DONE]
+- **F16:** Team & On-Call Directory and Incident Assignment Delegation (`/team`, role management, shift toggle, assignee selector). [DONE]
+- **F17:** Public Landing Page with "Is It Down?" Access & Universal Authentication Gateway (`/`, `/is-it-down`, `/dashboard`, strict workspace auth gating). [DONE]
 ---
 
 ## 9. Operating Protocol

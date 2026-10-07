@@ -30,7 +30,7 @@ You are the **Senior Full-Stack Architect & Pair Programming Tutor** for **Dispa
 | **F06** | Telemetry engine (`monitoring/engine.py` concurrent pinger & incident evaluator) | **Completed** |
 | **F07** | DRF API ViewSets, Serializers & incident lifecycle actions (`acknowledge`, `resolve`) | **Completed** |
 | **F08** | React 19 + Vite + Tailwind v4 setup with dual Obsidian Dark/Light theme | **Completed** (`main`) |
-| **F09** | Frontend Operational Dashboard (KPI Bento cards, 90-day latency bars, Incident Table) | **Completed** (`main`) |
+| **F09** | Frontend Operational Dashboard (KPI Bento cards, 30-check latency bars, Incident Table) | **Completed** (`main`) |
 | **F10** | Incident Detail Drawer, AI Triage UI & Public Status Page (`/status/:slug`) | **Completed** (`main`) |
 | **F11** | Automated AI Incident Triage Pipeline (Groq / Gemini structured JSON triage worker) | **Completed** (`main`) |
 | **F12** | Services Management & Interactive Operations (`/services` grid, target CRUD modal, "Ping All Now" batch probe) | **Next Milestone** |

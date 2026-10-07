@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Flame,
-  X,
   Database,
   Cpu,
   Clock,
@@ -18,6 +17,7 @@ import { incidentsApi } from "../../api/incidents.api";
 import type { OutageScenario, SimulateCrashResponse } from "../../types/incident";
 import type { Service } from "../../types/service";
 import { Button } from "../ui/Button";
+import { Modal } from "../ui/Modal";
 
 interface OutageSimulatorModalProps {
   isOpen: boolean;
@@ -144,38 +144,15 @@ export const OutageSimulatorModal: React.FC<OutageSimulatorModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs">
-      <div className="w-full max-w-xl rounded-2xl bg-white dark:bg-obsidian-card border border-slate-200 dark:border-obsidian-border shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-        {/* Modal Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-obsidian-border">
-          <div className="flex items-center gap-2.5">
-            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-rose-500/10 text-rose-500">
-              <Flame className="w-4 h-4" />
-            </div>
-            <div>
-              <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-                Chaos & Outage Simulator
-                <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-500 border border-rose-500/20">
-                  Testing
-                </span>
-              </h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                Inject realistic outages to test telemetry alerts and AI triage
-              </p>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-obsidian-hover transition-colors cursor-pointer"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-
-        {/* Modal Body */}
-        <div className="p-6 space-y-5 max-h-[80vh] overflow-y-auto">
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Chaos & Outage Simulator"
+      subtitle="Inject realistic outages to test telemetry alerts and AI triage"
+      icon={<Flame className="w-4 h-4" />}
+      maxWidth="xl"
+    >
+      <div className="p-6 space-y-5 max-h-[80vh] overflow-y-auto">
           {errorMessage && (
             <div className="p-3 rounded-lg text-xs font-medium bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
               {errorMessage}
@@ -335,7 +312,6 @@ export const OutageSimulatorModal: React.FC<OutageSimulatorModalProps> = ({
             </div>
           </form>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 };

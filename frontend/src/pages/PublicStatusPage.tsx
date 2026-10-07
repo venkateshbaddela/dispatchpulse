@@ -7,7 +7,7 @@ import {
   Clock,
   ShieldCheck,
 } from "lucide-react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { servicesApi } from "../api/services.api";
 import { Badge, type BadgeVariant } from "../components/ui/Badge";
 import { Spinner } from "../components/ui/Spinner";
@@ -113,7 +113,9 @@ export const PublicStatusPage: React.FC = () => {
         {/* Top eader */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-200 dark:border-obsidian-border">
           <div className="flex items-center gap-3">
-            <Logo showText={true} size="md" />
+            <Link to="/" title="DispatchPulse Home" className="hover:opacity-90 transition-opacity">
+              <Logo showText={true} size="md" />
+            </Link>
             <div>
               <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100">
                 {statusData.organization}

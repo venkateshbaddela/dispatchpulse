@@ -5,8 +5,9 @@ import {
 import { ExternalLink, Globe, RefreshCw, Zap } from "lucide-react";
 import React, { useState } from "react";
 import { servicesApi } from "../../api/services.api";
-import {type Service } from "../../types/service";
+import { type Service } from "../../types/service";
 import { LatencyBar } from "./LatencyBar";
+import { ServiceStatusBadge } from "../ui/ServiceStatusBadge";
 
 interface ServicesListProps {
   services: Service[];
@@ -59,8 +60,6 @@ export const ServicesList: React.FC<ServicesListProps> = ({
   return (
     <div className="space-y-3">
       {services.map((service) => {
-        const isOperational = service.status === "OPERATIONAL";
-        const isDegraded = service.status === "DEGRADED";
         const isPinging = activePingingId === service.id;
 
         return (
@@ -75,31 +74,7 @@ export const ServicesList: React.FC<ServicesListProps> = ({
                   <h3 className="text-base font-bold tracking-tight text-slate-900 dark:text-slate-100">
                     {service.name}
                   </h3>
-                  {/* Status Pill Badge */}
-                  <span
-                    className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold ${
-                      isOperational
-                        ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
-                        : isDegraded
-                          ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20"
-                          : "bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20"
-                    }`}
-                  >
-                    <span
-                      className={`w-1.5 h-1.5 rounded-full ${
-                        isOperational
-                        ? 'bg-emerald-500'
-                        : isDegraded
-                        ? 'bg-amber-500'
-                        : 'bg-rose-500 animate-ping'
-                        }`}
-                    />
-                    {isOperational
-                      ? "Operational"
-                      : isDegraded
-                        ? "Degraded"
-                        : "Major Outage"}
-                  </span>
+                  <ServiceStatusBadge status={service.status} />
                 </div>
 
                 {/* Target URL */}

@@ -49,7 +49,7 @@ Built as a decoupled monorepo featuring a high-performance **Django REST Framewo
                  └───────────────────┬───────┴────────────────────────────┘
                                      ▼
                           ┌─────────────────────────────────────┐
-                          │        PostgreSQL Database          │
+                          │           SQLite Database           │
                           │  Multi-Tenant Organizations & Logs  │
                           └─────────────────────────────────────┘
 ```
@@ -108,7 +108,7 @@ Built as a decoupled monorepo featuring a high-performance **Django REST Framewo
 | Layer | Technologies |
 |---|---|
 | **Backend API** | Python 3.12, Django 5.x, Django REST Framework (DRF) |
-| **Database** | PostgreSQL (`psycopg` v3) / SQLite (development) |
+| **Database** | SQLite (`db.sqlite3`) |
 | **Authentication** | DRF Token Authentication (`Authorization: Token <key>`) |
 | **Frontend SPA** | React 19, TypeScript, Vite |
 | **Styling** | Tailwind CSS v4, Lucide React icons |

@@ -34,7 +34,7 @@ export const KPICards: React.FC<KPICardsProps> = ({ kpis, isLoading }) => {
   // Latency Thresold Styling
   const getLatencyColor = (ms: number) => {
     if (ms === 0) return "text-slate-400";
-    if (ms < 200) return "text-emerald-500 dark:text-emerald:400";
+    if (ms < 200) return "text-emerald-500 dark:text-emerald-400";
     if (ms < 500) return "text-amber-500 dark:text-amber-400";
     return "text-rose-500 dark:text-rose-400";
   };
@@ -76,7 +76,7 @@ export const KPICards: React.FC<KPICardsProps> = ({ kpis, isLoading }) => {
             }`}
           />
         </div>
-        <p className="mt-2 text-xs text-slate-560 dark:text-slate-400">
+        <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
           {isOperational
             ? "All core systems nominal"
             : "Active disruptions reported"}

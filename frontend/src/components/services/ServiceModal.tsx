@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
-import { Globe, Radio, X } from "lucide-react";
+import { Globe, Radio } from "lucide-react";
 import React, { useState } from "react";
 import { servicesApi } from "../../api/services.api";
 import type {
@@ -9,6 +9,7 @@ import type {
   UpdateServicePayload,
 } from "../../types/service";
 import { Button } from "../ui/Button";
+import { Modal } from "../ui/Modal";
 
 interface ServiceModalProps {
   isOpen: boolean;
@@ -100,35 +101,15 @@ const ServiceModalDialog: React.FC<Omit<ServiceModalProps, "isOpen">> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs">
-      <div className="w-full max-w-md rounded-2xl bg-white dark:bg-obsidian-card border border-slate-200 dark:border-obsidian-border shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-        {/* Modal Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-obsidian-border">
-          <div className="flex items-center gap-2.5">
-            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-500/10 text-indigo-500">
-              <Radio className="w-4 h-4" />
-            </div>
-            <div>
-              <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100">
-                {isEditMode ? "Edit Monitored Target" : "Register Service Target"}
-              </h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                Configure HTTP endpoint & telemetry polling cadence
-              </p>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-obsidian-hover transition-colors cursor-pointer"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-
-        {/* Modal Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      title={isEditMode ? "Edit Monitored Target" : "Register Service Target"}
+      subtitle="Configure HTTP endpoint & telemetry polling cadence"
+      icon={<Radio className="w-4 h-4" />}
+      maxWidth="md"
+    >
+      <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {errorMessage && (
             <div className="p-3 rounded-lg text-xs font-medium bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
               {errorMessage}
@@ -205,8 +186,7 @@ const ServiceModalDialog: React.FC<Omit<ServiceModalProps, "isOpen">> = ({
             </Button>
           </div>
         </form>
-      </div>
-    </div>
+    </Modal>
   );
 };
 

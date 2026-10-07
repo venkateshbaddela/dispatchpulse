@@ -1,8 +1,8 @@
 # DispatchPulse — Architecture Decision Log (ADR)
 
 ## ADR-001: Database Strategy
-- **Decision:** Use PostgreSQL with `psycopg` (v3) as the primary database engine. Exclude SQLite files (`*.sqlite3`) via `.gitignore`.
-- **Reasoning:** Telemetry ingestion and JSON incident summaries require production-grade concurrency and robust JSONB support.
+- **Decision:** Use SQLite (`db.sqlite3`) via `django.db.backends.sqlite3` as the primary database engine.
+- **Reasoning:** Zero-friction local development, instant portability across developer environments, and robust native JSON support in Python/Django without external database server overhead.
 
 ## ADR-002: User Authentication & Multi-Tenancy Anchor
 - **Decision:** Custom `accounts.User` inheriting from `AbstractUser` with `USERNAME_FIELD = "email"` and explicit `fieldsets` / `add_fieldsets` extending `BaseUserAdmin`. `accounts.Organization` serves as the multi-tenant root with UUID primary keys.
@@ -22,4 +22,4 @@
 
 ## ADR-006: Demo Seed Data & Telemetry Ingestion Strategy
 - **Decision:** The `seed_demo_data` command uses idempotent `get_or_create` / `update_or_create` patterns with an opt-in `--flush` flag for safe resets. Historical time-series telemetry (`HealthCheckLog`) is ingested using `bulk_create` rather than single-row inserts.
-- **Reasoning:** Prevents database state corruption across repeated runs while avoiding thousands of separate network trips to the PostgreSQL database for telemetry logs.
+- **Reasoning:** Prevents database state corruption across repeated runs while avoiding thousands of separate database write operations for telemetry logs.

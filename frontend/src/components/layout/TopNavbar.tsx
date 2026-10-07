@@ -1,10 +1,14 @@
 import React from "react";
-import { Search, Sun, Moon, CheckCircle2 } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Search, Sun, Moon, CheckCircle2, ExternalLink } from "lucide-react";
 import { useTheme } from "../../context/useTheme";
+import { useAuth } from "../../context/useAuth";
 import { Badge } from "../ui/Badge";
 
 export const TopNavbar: React.FC = () => {
   const { theme, toggleTheme } = useTheme();
+  const { user } = useAuth();
+  const orgSlug = user?.organization?.slug;
 
   return (
     <header className="h-16 shrink-0 flex items-center justify-between px-6 border-b border-slate-200 dark:border-obsidian-border bg-white dark:bg-obsidian-canvas">
@@ -25,10 +29,30 @@ export const TopNavbar: React.FC = () => {
 
       {/* Global Status Pill & Theme Switcher */}
       <div className="flex items-center gap-4">
-        <Badge variant="emerald" pulse className="hidden sm:inline-flex py-1">
-            <CheckCircle2 className="w-3.5 h-3.5"/>
+        {orgSlug ? (
+          <Link
+            to={`/status/${orgSlug}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            title={`Open Public Customer Status Page (/status/${orgSlug})`}
+            className="group hidden sm:inline-flex"
+          >
+            <Badge
+              variant="emerald"
+              pulse
+              className="py-1 cursor-pointer group-hover:bg-emerald-500/20 transition-colors"
+            >
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              <span>Public Status</span>
+              <ExternalLink className="w-3 h-3 ml-0.5 opacity-60 group-hover:opacity-100 transition-opacity" />
+            </Badge>
+          </Link>
+        ) : (
+          <Badge variant="emerald" pulse className="hidden sm:inline-flex py-1">
+            <CheckCircle2 className="w-3.5 h-3.5" />
             Systems Operational
-        </Badge>
+          </Badge>
+        )}
 
         <div
         onClick={toggleTheme}

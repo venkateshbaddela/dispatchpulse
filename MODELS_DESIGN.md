@@ -187,7 +187,7 @@ erDiagram
 #### What We Accomplish With This Model:
 1. **High-Volume Telemetry Storage:** Scaled for millions of records. Uses a 64-bit `BigAutoField` rather than UUID to maintain tight sequential B-tree indexing on disk, minimizing write amplification during frequent ping cycles.
 2. **Safe Logging of Network-Level Failures:** Making `status_code` and `latency_ms` nullable prevents database write exceptions when probes encounter DNS resolution errors, connection drops, or hard socket timeouts where no HTTP response code exists.
-3. **Uptime SLA & Latency Percentile Analytics:** The indexed `checked_at` timestamp supports fast time-window queries (e.g., past 24 hours, past 90 days) to compute SLA percentages (99.9% uptime) and average latency graphs.
+3. **Uptime SLA & Latency Percentile Analytics:** The indexed `checked_at` timestamp supports fast time-window queries (e.g., past 24 hours, past 30 days) to compute SLA percentages (99.9% uptime) and average latency graphs.
 
 ---
 

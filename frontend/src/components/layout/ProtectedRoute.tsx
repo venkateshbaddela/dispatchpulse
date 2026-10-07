@@ -8,10 +8,10 @@ export const ProtectedRoute: React.FC = () => {
 
     if (isLoading) {
         return (
-            <div className="flex h-screen w-full items-center justify-center bg-obsidian-canvas text-slate-100">
+            <div className="flex h-screen w-full items-center justify-center bg-slate-50 dark:bg-obsidian-canvas text-slate-900 dark:text-slate-100">
                 <div className="flex flex-col items-center gap-3">
                     <Spinner size="lg" />
-                    <p className="text-xs uppercase tracking-widest text-slate-400">Verifying Session...</p>
+                    <p className="text-xs uppercase tracking-widest text-slate-500 dark:text-slate-400">Verifying Session...</p>
                 </div>
             </div>
         )

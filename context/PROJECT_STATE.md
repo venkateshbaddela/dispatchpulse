@@ -11,7 +11,7 @@
 
 * **What is DispatchPulse?** A real-time service health monitoring, telemetry dashboard, and AI-assisted incident triage platform.
 * **Tech Stack:**
-  * **Backend:** Python 3.12+ / Django 5.x / Django REST Framework (DRF) / PostgreSQL (`psycopg` v3) / DRF `TokenAuthentication`.
+  * **Backend:** Python 3.12+ / Django 5.x / Django REST Framework (DRF) / SQLite (`db.sqlite3`) / DRF `TokenAuthentication`.
   * **Frontend:** React 19 / TypeScript / Vite / Tailwind CSS v4 / React Router DOM / `@tanstack/react-query` / Lucide React / Axios.
 * **Workspace Architecture:** Monorepo with `/backend` and `/frontend`.
   * Run backend: `python manage.py runserver 0.0.0.0:8000` (from `/backend`).
@@ -33,7 +33,7 @@
 | **F06** | Telemetry engine (`monitoring/engine.py` concurrent pinger & alert runner) | **Completed** | `main` |
 | **F07** | DRF API ViewSets, Serializers & incident lifecycle actions (`acknowledge`, `resolve`) | **Completed** | `main` |
 | **F08** | React 19 + Vite Setup & Tailwind modern SRE Obsidian workspace theme | **Completed** | `main` (`68f9ae6`) |
-| **F09** | Frontend Operational Dashboard (KPI Bento cards, 90-day latency bars, Incident Table) | **Completed** | `main` (`15a7fe7`) |
+| **F09** | Frontend Operational Dashboard (KPI Bento cards, 30-check latency bars, Incident Table) | **Completed** | `main` (`15a7fe7`) |
 | **F10** | Incident Detail Drawer, AI Triage UI & Public Status Page (`/status/:slug`) | **Completed** | `main` (`8aa8ecf`) |
 | **F11** | Automated AI Incident Triage Pipeline (Groq / Gemini structured JSON output worker + trigger UI) | **Completed** | `main` |
 | **F12** | Services Management & Interactive Operations (`/services` grid, target CRUD modal, "Ping All Now" batch probe) | **Completed** | `main` (`8aa550f`, `d39c3b4`) |
@@ -41,6 +41,7 @@
 | **F14** | Public Instant Website Availability Checker ("Is It Down Right Now?" `/is-it-down`, `POST /api/public/probe/` with SSRF protection & rate limiting) | **Completed** | `feat/f14-public-site-checker` |
 | **F15** | Alert Rules Configuration UI & Outage Simulator ("Simulate Crash / Webhook" trigger, dynamic threshold tuning) | **Completed** | `feat/f15-alert-rules-simulator` |
 | **F16** | Team & On-Call Directory and Incident Assignment Delegation (`/team`, role management, shift toggle, assignee selector) | **Completed** | `main` |
+| **F17** | Public Landing Page with "Is It Down?" Access & Universal Authentication Gateway (`/`, `/is-it-down`, `/dashboard`, strict workspace auth gating) | **Completed** | `main` |
 
 ---
 
@@ -68,3 +69,4 @@
    * **ALWAYS** use solid dark borders: `border-slate-200 dark:border-obsidian-border` (or `dark:border-slate-800`).
 5. **Fast Refresh Rule (ESLint):** Never export hooks or Context instances from React component files. Hooks must live in `src/context/useAuth.ts` and `src/context/useTheme.ts`.
 6. **Routing:** Always use absolute route redirects (e.g. `<Navigate to="/login" replace />`), never relative paths.
+7. **FOUC & Dark Mode Reload Rule:** To eliminate light-theme flickering on reload in dark mode, `index.html` executes a synchronous `<script>` in `<head>` applying `dark` to `document.documentElement` before DOM parsing, while `index.css` sets base canvas background colors on `html` and `body`. Root wrappers must avoid `transition-colors duration-*` on initial load.
